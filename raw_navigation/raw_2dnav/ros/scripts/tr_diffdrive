@@ -1,0 +1,5 @@
+gnome-terminal -x bash -c "roslaunch raw_bringup_sim robot_no_x.launch"
+sleep 10
+gnome-terminal -x bash -c "roslaunch raw_2dnav 2dnav_sim.launch"
+sleep 10
+gnome-terminal -x bash -c "rosrun rviz rviz"

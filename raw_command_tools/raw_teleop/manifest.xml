@@ -1,0 +1,23 @@
+<package>
+  <description brief="raw_teleop">
+
+     raw_teleop
+
+  </description>
+  <author>fred</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/raw_teleop</url>
+
+  <depend package="roscpp"/>
+  <depend package="geometry_msgs"/>
+  <depend package="sensor_msgs"/>
+  <depend package="joy"/>
+  <depend package="brics_actuator"/>
+  <depend package="std_srvs"/>
+  <depend package="arm_navigation_msgs"/>
+  <depend package="pr2_teleop"/>
+
+</package>
+
+

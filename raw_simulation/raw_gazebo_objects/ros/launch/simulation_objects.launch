@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<launch>
+
+    <node pkg="raw_gazebo_objects" type="spawn_objects.py" name="spawn_sim_objects" respawn="false" output="screen" />
+    
+</launch>

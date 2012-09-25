@@ -1,0 +1,13 @@
+<stack>
+  <description brief="raw_common">raw_common</description>
+  <author>Maintained by fred</author>
+  <license>BSD</license>  
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/raw_common</url>
+  <depend stack="common_msgs" /> <!-- sensor_msgs, geometry_msgs, visualization_msgs -->
+  <depend stack="geometry" /> <!-- tf -->
+  <depend stack="ros" />
+  <depend stack="ros_comm" />
+  <depend stack="youbot_common" /> <!-- youbot_description -->
+
+</stack>

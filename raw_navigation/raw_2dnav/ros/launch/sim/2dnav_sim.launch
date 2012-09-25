@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<launch>
+    <!-- navigation goals -->
+	<include file="$(find raw_default_env_config)/upload_param.launch" />
+    
+	<arg name="map" default="$(find raw_default_env_config)/$(env ROBOT_ENV)/map.yaml" />
+
+	<!--- Run map_server -->
+	<node name="map_server" pkg="map_server" type="map_server" args="$(arg map)"/>
+
+	<!-- Run AMCL -->
+	<include file="$(find raw_2dnav)/ros/launch/sim/amcl_sim.launch" />
+
+	<!-- launch move_base node -->
+	<include file="$(find raw_2dnav)/ros/launch/sim/move_base_sim.launch" />
+
+    <!-- ekf (no effect on real robot, but need for simulation) -->
+	<include file="$(find raw_2dnav)/ros/launch/ekf.launch" />	
+</launch>

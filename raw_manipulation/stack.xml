@@ -1,0 +1,20 @@
+<stack>
+  <description brief="raw_manipulation">raw_manipulation</description>
+  <author>Maintained by fred</author>
+  <license>BSD</license>  
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/raw_manipulation</url>
+  <depend stack="arm_navigation" /> <!-- kinematics_msgs, arm_navigation_msgs -->
+  <depend stack="cob_common" /> <!-- brics_actuator -->
+  <depend stack="common" /> <!-- actionlib -->
+  <depend stack="common_msgs" /> <!-- nav_msgs, sensor_msgs, trajectory_msgs, geometry_msgs -->
+  <depend stack="control" /> <!-- control_msgs -->
+  <depend stack="geometry" /> <!-- tf -->
+  <depend stack="raw_behaviors" /> <!-- raw_base_placement, raw_base_placement_matthias_fueller -->
+  <depend stack="raw_command_tools" /> <!-- raw_script_server -->
+  <depend stack="raw_common" /> <!-- raw_srvs -->
+  <depend stack="ros" /> <!-- rospack -->
+  <depend stack="ros_comm" /> <!-- rospy, std_msgs, roscpp, std_srvs -->
+  <depend stack="youbot-manipulation" /> <!-- youbot_arm_navigation, youbot_joint_trajectory_action -->
+
+</stack>

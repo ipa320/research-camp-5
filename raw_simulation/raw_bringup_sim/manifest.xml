@@ -1,0 +1,23 @@
+<package>
+  <description brief="raw_bringup_sim">
+
+     raw_bringup_sim
+
+  </description>
+  <author>fred</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/raw_bringup_sim</url>
+
+  <depend package="raw_teleop"/>
+  <depend package="youbot_description"/>
+  <depend package="raw_default_robot_config"/>
+  <depend package="youbot_arm_navigation"/>
+  <depend package="raw_gazebo_worlds" /> 
+  <depend package="raw_hardware_config" />
+  <depend package="raw_simulated_kinect" />
+
+
+</package>
+
+

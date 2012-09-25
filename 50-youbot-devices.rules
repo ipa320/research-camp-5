@@ -1,0 +1,1 @@
+UBSYSTEM=="tty", SYSFS{modalias}=="usb:v15D1p0000d0100dc02dsc00dp00ic02isc02ip01" KERNEL=="ttyACM*", SYMLINK+="youbot/hokuyo_front"

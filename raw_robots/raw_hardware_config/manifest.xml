@@ -1,0 +1,17 @@
+<package>
+  <description brief="raw_hardware_config">
+
+     raw_hardware_config
+
+  </description>
+  <author>fred</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/raw_hardware_config</url>
+
+  <depend package="raw_robot_description" />
+  <depend package="youbot_description" />
+
+</package>
+
+

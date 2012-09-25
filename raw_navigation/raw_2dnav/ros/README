@@ -1,0 +1,8 @@
+youBot platform: omnidirectional mobile platform with 4 KUKA omniWheels (530x360x106mm, 15 mm clearance, 20kg total weight, 
+20kg payload, 0.8m/s speed, EtherCAT communication, 24V)
+
+Energy supply: one set of two batteries (Two 12 V, 5 Ah, maintenance-free lead acid rechargeable batteries; 
+approximate runtime: 90 minutes) embedded into mobile platform
+
+On-board PC: mini ITX board form factor (embedded CPU, passively cooled, 512 MB RAM, 4 GB 
+Compact Flash, WLAN, USB), embedded into the mobile platform

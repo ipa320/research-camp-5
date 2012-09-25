@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<launch>
+    <param name="use_sim_time" value="true"/>
+    <arg name="gazebo_arguments" default=""/>
+
+    <!-- start gazebo with empty world -->
+    <node name="gazebo" pkg="gazebo" type="gazebo" args="$(arg gazebo_arguments) $(find gazebo_worlds)/worlds/empty.world" respawn="false" output="screen">
+        <env name="GAZEBO_RESOURCE_PATH" value="$(find youbot_description):$(find gazebo_worlds):$(find gazebo)/gazebo/share/gazebo" />
+		<remap from="base_controller/command" to="cmd_vel"/>
+        <remap from="/base_odometry/odom" to="/odom" />
+    </node>
+
+    <!-- send world urdf to param server -->
+	<param name="arena_description" command="$(find xacro)/xacro.py $(find raw_gazebo_worlds)/common/worlds/$(env ROBOT_ENV).urdf" />
+	<node name="gazebo_arena_model" pkg="gazebo" type="spawn_model" args="-urdf -param arena_description -model arena -x 0.0 -y 0.0 -z 0.2" respawn="false" output="screen" />    
+
+</launch>
+
+
+

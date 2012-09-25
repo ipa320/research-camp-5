@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<launch>
+	<!-- base components -->
+	<include file="$(find raw_bringup_sim)/robots/robot.launch" />
+
+    <!-- navigation -->
+    <include file="$(find raw_2dnav)/ros/launch/sim/2dnav_sim.launch" />	
+
+    <!-- behavior -->
+    <include file="$(find raw_base_placement)/ros/launch/placement_wrt_platform.launch" />
+
+    <!-- manipulation -->
+    <include file="$(find raw_arm_navigation)/ros/launch/simple_manipulation.launch" />	
+
+    <!-- script server -->
+    <include file="$(find raw_script_server)/launch/script_server.launch" />
+	
+	<!-- perception --> 
+	<include file="$(find raw_object_finder)/ros/launch/object_segmentation.launch" />
+
+    <!-- load objects into gazebo -->
+	<include file="$(find raw_gazebo_objects)/ros/launch/simulation_objects.launch" />
+
+</launch>

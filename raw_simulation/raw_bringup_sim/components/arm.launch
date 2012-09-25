@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<launch>
+	<rosparam command="load" ns="arm_1" file="$(find raw_hardware_config)/$(env ROBOT)/config/arm.yaml"/>
+	<rosparam command="load" ns="arm_1" file="$(find raw_hardware_config)/$(env ROBOT)/config/gripper.yaml"/>	
+</launch>
+
+
+

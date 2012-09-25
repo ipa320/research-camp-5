@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<launch>	
+		
+    <include file="$(find youbot_oodl)/launch/youbot_oodl_driver.launch" />
+	<include file="$(find raw_bringup)/components/youbot_joint_state_publisher.launch" />
+
+	<include file="$(find raw_bringup)/components/arm.launch" />		
+
+	<include file="$(find raw_bringup)/components/base_front_hokuyo_node.launch" />
+	<!--include file="$(find raw_bringup)/components/base_rear_hokuyo_node.launch" /-->
+
+	<include file="$(find raw_teleop)/ros/launch/teleop_joypad.launch" />
+
+</launch>

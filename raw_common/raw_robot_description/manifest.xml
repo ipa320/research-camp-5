@@ -1,0 +1,16 @@
+<package>
+  <description brief="raw_robot_description">
+
+     raw_robot_description
+
+  </description>
+  <author>fred</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/raw_robot_description</url>
+
+  <depend package="youbot_description" />
+
+</package>
+
+

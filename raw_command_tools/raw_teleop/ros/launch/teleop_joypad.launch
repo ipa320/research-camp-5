@@ -1,0 +1,11 @@
+<?xml version="1.0" ?>
+<launch>
+	<node pkg="joy" type="joy_node" name="joy_node">
+        <rosparam command="load" file="$(find raw_hardware_config)/$(env ROBOT)/config/joy.yaml"/>
+	</node>
+	
+	<!-- start youbot teleop node -->
+	<node pkg="raw_teleop" type="teleop_joypad_node" name="raw_teleop_joypad" output="screen">
+        <rosparam command="load" file="$(find raw_hardware_config)/$(env ROBOT)/config/teleop.yaml"/>
+	</node>
+</launch>

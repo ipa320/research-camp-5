@@ -1,0 +1,10 @@
+/src/raw_script_server
+/msg/StateAction*.msg
+/msg/StateFeedback.msg
+/msg/StateResult.msg
+/msg/StateGoal.msg
+/msg/ScriptAction*.msg
+/msg/ScriptFeedback.msg
+/msg/ScriptResult.msg
+/msg/ScriptGoal.msg
+

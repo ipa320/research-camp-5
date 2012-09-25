@@ -1,0 +1,17 @@
+<package>
+  <description brief="raw_gazebo_objects">
+
+     raw_gazebo_objects
+
+  </description>
+  <author>fred</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/raw_gazebo_objects</url>
+
+  <depend package="rospy" />
+  <depend package="gazebo" />
+  
+</package>
+
+

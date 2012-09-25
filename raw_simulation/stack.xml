@@ -1,0 +1,22 @@
+<stack>
+  <description brief="raw_simulation">raw_simulation</description>
+  <author>Maintained by fred</author>
+  <license>BSD</license>  
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/raw_simulation</url>
+  <depend stack="image_common" /> <!-- image_transport -->
+  <depend stack="nodelet_core" /> <!-- nodelet -->
+  <depend stack="pr2_simulator" /> <!-- pr2_gazebo_plugins -->
+  <depend stack="raw_command_tools" /> <!-- raw_teleop -->
+  <depend stack="raw_robots" /> <!-- raw_hardware_config, raw_default_robot_config -->
+  <depend stack="robot_model" /> <!-- convex_decomposition, ivcon -->
+  <depend stack="ros" />
+  <depend stack="ros_comm" /> <!-- rospy, roscpp -->
+  <depend stack="simulator_gazebo" /> <!-- gazebo_tools, gazebo, gazebo_plugins -->
+  <depend stack="vision_opencv" /> <!-- cv_bridge -->
+  <depend stack="visualization_common" /> <!-- ogre_tools -->
+  <depend stack="xacro" /> <!-- xacro -->
+  <depend stack="youbot-manipulation" /> <!-- youbot_arm_navigation, youbot_joint_trajectory_action -->
+  <depend stack="youbot_common" /> <!-- youbot_description -->
+
+</stack>

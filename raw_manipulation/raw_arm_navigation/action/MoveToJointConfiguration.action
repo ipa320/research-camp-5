@@ -1,0 +1,8 @@
+# goal
+brics_actuator/JointPositions goal
+---
+# result
+arm_navigation_msgs/ArmNavigationErrorCodes result
+---
+# feedback
+arm_navigation_msgs/ArmNavigationErrorCodes result

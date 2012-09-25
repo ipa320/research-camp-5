@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<launch>
+
+	<node pkg="raw_base_placement" type="placement_wrt_platform_service_server" name="raw_base_placement_wrt_platform_as" ns="raw_base_placement" respawn="false" output="screen" /> 
+	<node pkg="raw_base_placement" type="placement_wrt_platform_action_server" name="raw_base_placement_wrt_platform_ss" ns="raw_base_placement" respawn="false" output="screen" /> 
+
+</launch>

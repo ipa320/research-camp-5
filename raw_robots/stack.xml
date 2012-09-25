@@ -1,0 +1,16 @@
+<stack>
+  <description brief="raw_robots">raw_robots</description>
+  <author>Maintained by fred</author>
+  <license>BSD</license>  
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/raw_robots</url>
+  <depend stack="bosch_drivers" /> <!-- usb_cam -->
+  <depend stack="openni_kinect" /> <!-- openni_camera -->
+  <depend stack="raw_command_tools" /> <!-- raw_teleop -->
+  <depend stack="raw_common" /> <!-- raw_robot_description -->
+  <depend stack="ros" />
+  <depend stack="youbot-manipulation" /> <!-- youbot_arm_navigation, youbot_joint_trajectory_action -->
+  <depend stack="youbot_common" /> <!-- youbot_description -->
+  <depend stack="youbot_drivers" /> <!-- youbot_oodl -->
+
+</stack>

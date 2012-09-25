@@ -1,0 +1,14 @@
+- git:
+    local-name: youbot_driver
+    uri: https://github.com/youbot/youbot_driver.git
+    version: master
+
+- git:
+    local-name: youbot-ros-pkg
+    uri: git@github.com:b-it-bots/youbot-ros-pkg.git
+    version: master
+
+- git:
+    local-name: youbot-manipulation
+    uri: git@github.com:b-it-bots/youbot-manipulation.git
+    version: master

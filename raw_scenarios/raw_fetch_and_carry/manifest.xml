@@ -1,0 +1,25 @@
+<package>
+  <description brief="raw_fetch_and_carry">
+
+     raw_fetch_and_carry
+
+  </description>
+  <author>fred</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/raw_fetch_and_carry</url>
+  
+  <depend package="smach"/>
+  <depend package="smach_ros"/>
+  <depend package="raw_generic_states"/>
+  <depend package="raw_bringup"/>
+  <depend package="raw_2dnav"/>
+  <depend package="raw_arm_navigation"/>
+  <depend package="raw_object_finder"/>
+  <depend package="raw_script_server"/>
+  <depend package="raw_bringup"/>
+  <depend package="raw_bringup_sim"/>
+  <depend package="raw_base_placement"/>
+
+
+</package>

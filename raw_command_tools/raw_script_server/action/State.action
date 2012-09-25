@@ -1,0 +1,7 @@
+#goal definition
+raw_script_server/ScriptState state
+---
+#result definition
+int16 return_value
+---
+#feedback definition

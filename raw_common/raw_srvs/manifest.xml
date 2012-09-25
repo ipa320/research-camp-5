@@ -1,0 +1,15 @@
+<package>
+  <description brief="raw_srvs">
+
+     raw_srvs
+
+  </description>
+  <author>fred</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/raw_srvs</url>
+
+  <depend package="raw_msgs" />
+</package>
+
+

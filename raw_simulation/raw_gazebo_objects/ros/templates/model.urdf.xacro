@@ -1,0 +1,49 @@
+<?xml version="1.0"?>
+<robot name="model_template" 
+		xmlns:xi="http://www.w3.org/2001/XInclude"
+	    xmlns:gazebo="http://playerstage.sourceforge.net/gazebo/xmlschema/#gz"
+	    xmlns:model="http://playerstage.sourceforge.net/gazebo/xmlschema/#model"
+	    xmlns:sensor="http://playerstage.sourceforge.net/gazebo/xmlschema/#sensor"
+	    xmlns:body="http://playerstage.sourceforge.net/gazebo/xmlschema/#body"
+	    xmlns:geom="http://playerstage.sourceforge.net/gazebo/xmlschema/#geom"
+	    xmlns:joint="http://playerstage.sourceforge.net/gazebo/xmlschema/#joint"
+	    xmlns:interface="http://playerstage.sourceforge.net/gazebo/xmlschema/#interface"
+	    xmlns:rendering="http://playerstage.sourceforge.net/gazebo/xmlschema/#rendering"
+	    xmlns:renderable="http://playerstage.sourceforge.net/gazebo/xmlschema/#renderable"
+	    xmlns:controller="http://playerstage.sourceforge.net/gazebo/xmlschema/#controller"
+	    xmlns:physics="http://playerstage.sourceforge.net/gazebo/xmlschema/#physics"
+	    xmlns:xacro="http://www.ros.org/wiki/xacro">	
+
+	<xacro:macro name="model_template" params="name model_filename scale height weight">
+		<link name="${name}_link">
+			<inertial>
+				<origin xyz="0 0 ${-height / 2}" rpy="0 0 0" />
+				<mass value="${weight}" />
+			    <inertia  ixx="1.0" ixy="0.0"  ixz="0.0"  iyy="1.0"  iyz="0.0"  izz="1.0" />
+			</inertial>
+
+			<visual>
+				<origin xyz="0 0 ${-height / 2}" rpy="0 0 0" />
+				<geometry>
+					<mesh filename="package://raw_gazebo_objects/common/models/${model_filename}" scale="${scale} ${scale} ${scale}" />
+				</geometry>
+			</visual>
+
+			<collision>
+				<origin xyz="0 0 ${-height / 2}" rpy="0 0 0" />
+				<geometry>
+					<mesh filename="package://raw_gazebo_objects/common/models/${model_filename}" scale="${scale} ${scale} ${scale}" />
+				</geometry>
+			</collision >
+		</link>
+		
+		<gazebo reference="${name}_link">
+		    <mu1 value="100.0" />
+		    <mu2 value="100.0" />
+            <kp  value="1000000.0" />
+            <kd  value="1.0" />
+			<selfCollide>true</selfCollide>
+		</gazebo>
+		
+	</xacro:macro> 
+</robot>	

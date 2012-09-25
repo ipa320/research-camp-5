@@ -1,0 +1,14 @@
+<package>
+  <description brief="raw_default_env_config">
+
+     raw_default_env_config
+
+  </description>
+  <author>fred</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/raw_default_env_config</url>
+
+</package>
+
+

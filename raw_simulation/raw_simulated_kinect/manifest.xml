@@ -1,0 +1,24 @@
+<package>
+  <description brief="raw_simulated_kinect">
+
+     raw_simulated_kinect
+
+  </description>
+  <author>Marc</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/raw_simulated_kinect</url>
+  
+  <depend package="cv_bridge"/>
+  <depend package="image_transport"/>
+  <depend package="nodelet"/>
+  <depend package="roscpp"/>
+  <depend package="pr2_gazebo_plugins"/>
+  
+  <export>
+    <nodelet plugin="${prefix}/nodelet_plugins.xml" />
+  </export> 
+
+</package>
+
+

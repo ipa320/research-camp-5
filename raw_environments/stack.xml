@@ -1,0 +1,9 @@
+<stack>
+  <description brief="raw_environments">raw_environments</description>
+  <author>Maintained by fred</author>
+  <license>BSD</license>  
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/raw_environments</url>
+  <depend stack="ros" />
+
+</stack>
