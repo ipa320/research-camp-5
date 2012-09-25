@@ -45,44 +45,36 @@ def main():
             transitions={'succeeded':'ADJUST_POSE', 
                         'failed':'overall_failed'})
 
-        smach.StateMachine.add('ADJUST_POSE', sleep(),
-            transitions={'succeeded':'SM_GRASP_OBJECT'})
+        smach.StateMachine.add('ADJUST_POSE_WRT_PLATFORM_AT_SOURCE', adjust_pose_wrt_platform(),
+            transitions={'succeeded':'SM_GRASP_OBJECT',
+                         'failed':'ADJUST_POSE_WRT_PLATFORM_AT_SOURCE'})
                       
         smach.StateMachine.add('SM_GRASP_OBJECT', sm_grasp_random_object(),
             transitions={'object_grasped':'PLACE_OBJECT_ON_REAR_PLATFORM', 
                          'failed':'SM_GRASP_OBJECT'})
                                 
         smach.StateMachine.add('PLACE_OBJECT_ON_REAR_PLATFORM', place_obj_on_rear_platform(),
-            transitions={'succeeded':'MOVE_BACK_FIXED_DISTANCE', 
-                        'no_more_free_poses':'MOVE_BACK_FIXED_DISTANCE3'})
-
-        smach.StateMachine.add('MOVE_BACK_FIXED_DISTANCE', move_base_rel(-0.15,0),
-            transitions={'succeeded':'SELECT_POSE_TO_APPROACH'})
-
-
-        smach.StateMachine.add('MOVE_BACK_FIXED_DISTANCE3', move_base_rel(-0.15,0),
-            transitions={'succeeded':'MOVE_TO_DESTINATION_POSE'})
+            transitions={'succeeded':'SELECT_POSE_TO_APPROACH', 
+                        'no_more_free_poses':'MOVE_TO_DESTINATION_POSE'})
 
         
         # place object at destination pose
         smach.StateMachine.add('MOVE_TO_DESTINATION_POSE', approach_pose("D1"),
-            transitions={'succeeded':'ADJUST_POSE_WRT_PLATFORM', 
+            transitions={'succeeded':'ADJUST_POSE_WRT_PLATFORM_AT_DESTINATION', 
                         'failed':'overall_failed'})
 
-        smach.StateMachine.add('ADJUST_POSE_WRT_PLATFORM', sleep(),
-            transitions={'succeeded':'GET_OBJ_POSES_FOR_CONFIGURATION'})
+        smach.StateMachine.add('ADJUST_POSE_WRT_PLATFORM_AT_DESTINATION', adjust_pose_wrt_platform(),
+            transitions={'succeeded':'GET_OBJ_POSES_FOR_CONFIGURATION',
+                         'failed':'ADJUST_POSE_WRT_PLATFORM_AT_DESTINATION'})
         
         smach.StateMachine.add('GET_OBJ_POSES_FOR_CONFIGURATION', get_obj_poses_for_goal_configuration("line"),
             transitions={'succeeded':'PLACE_OBJ_IN_CONFIGURATION',
                          'configuration_poses_not_available':'overall_failed'})
          
-        #place first obj in gripper
         smach.StateMachine.add('PLACE_OBJ_IN_CONFIGURATION', place_object_in_configuration(),
             transitions={'succeeded':'GRASP_OBJECT_FROM_PLTF',
                         'no_more_cfg_poses':'MOVE_ARM_OUT_OF_VIEW2'}) 
         
-        
-        #ToDo: implement state
         smach.StateMachine.add('GRASP_OBJECT_FROM_PLTF', grasp_obj_from_pltf(),
             transitions={'succeeded':'PLACE_OBJ_IN_CONFIGURATION_2',
                         'no_more_obj_on_pltf':'MOVE_ARM_OUT_OF_VIEW2'})
@@ -91,13 +83,8 @@ def main():
             transitions={'succeeded':'GRASP_OBJECT_FROM_PLTF',
                         'no_more_cfg_poses':'MOVE_ARM_OUT_OF_VIEW2'})
         
-        
         smach.StateMachine.add('MOVE_ARM_OUT_OF_VIEW2', move_arm_out_of_view(),
-                transitions={'succeeded':'MOVE_BACK_FIXED_DISTANCE2'})
-
-        smach.StateMachine.add('MOVE_BACK_FIXED_DISTANCE2', sleep(),
-            transitions={'succeeded':'MOVE_TO_EXIT'})
-        
+                transitions={'succeeded':'MOVE_TO_EXIT'})
         
         smach.StateMachine.add('MOVE_TO_EXIT', approach_pose("EXIT"),
             transitions={'succeeded':'overall_success', 
