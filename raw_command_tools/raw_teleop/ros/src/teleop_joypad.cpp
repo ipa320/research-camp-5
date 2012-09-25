@@ -220,7 +220,7 @@ void TeleOpJoypad::publishCommands()
 	{
 		checkArmJointLimits();
 
-		pub_arm_vel.publish(arm_vel_);
+		//pub_arm_vel.publish(arm_vel_);
 		pub_base_vel.publish(base_vel_);
 	}
 
@@ -229,8 +229,8 @@ void TeleOpJoypad::publishCommands()
 		if(button_deadman_pressed_prev_)
 		{
 			pub_base_vel.publish(base_zero_vel_);
-			setAllArmJointVel(0.0);
-			pub_arm_vel.publish(arm_vel_);
+			//setAllArmJointVel(0.0);
+			//pub_arm_vel.publish(arm_vel_);
 		}
 	}
 
