@@ -8,7 +8,9 @@
 	<include file="$(find youbot_description)/launch/control/youbot_arm_control.launch" />
 	<include file="$(find raw_bringup_sim)/components/arm.launch" />	
 
-    <include file="$(find youbot_description)/launch/control/youbot_base_control.launch" />
+	<include file="$(find youbot_description)/launch/control/youbot_base_control.launch" />
+
+	<include file="$(find raw_simulated_kinect)/ros/launch/simulated_kinect.launch" />
 		
 </launch>
 	
