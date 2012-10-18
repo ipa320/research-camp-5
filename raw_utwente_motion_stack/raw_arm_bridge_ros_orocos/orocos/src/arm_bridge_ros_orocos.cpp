@@ -2,6 +2,14 @@
 
 ArmBridgeRosOrocos::ArmBridgeRosOrocos(const string& name) :  TaskContext(name, PreOperational), m_youbot_arm_dof(5)
 {
+	for(size_t i=0; i < m_youbot_arm_dof; ++i)
+		m_trajectory_controller.push_back(new JointTrajectoryController);
+
+	m_trajectory_as_srv = new actionlib::ActionServer<control_msgs::FollowJointTrajectoryAction > (
+	  m_nh, "/arm_1/arm_controller/joint_trajectory_action",
+	  boost::bind(&ArmBridgeRosOrocos::armJointTrajectoryGoalCallback, this, _1),
+	  boost::bind(&ArmBridgeRosOrocos::armJointTrajectoryCancelCallback, this, _1), false);
+
 	m_joint_config_as = new actionlib::ActionServer<raw_arm_navigation::MoveToJointConfigurationAction > (
       m_nh, "/arm_1/arm_controller/MoveToJointConfigurationDirect", boost::bind(&ArmBridgeRosOrocos::armJointConfigurationGoalCallback, this, _1), false);
 
@@ -29,6 +37,7 @@ ArmBridgeRosOrocos::~ArmBridgeRosOrocos()
 {
 	delete m_cartesian_pose_with_impedance_ctrl_as;
 	delete m_joint_config_as;
+	delete m_trajectory_as_srv;
 }
 
 bool ArmBridgeRosOrocos::configureHook()
@@ -40,6 +49,9 @@ bool ArmBridgeRosOrocos::startHook()
 {
 	m_cartesian_pose_with_impedance_ctrl_as->start();
 	m_joint_config_as->start();
+	m_trajectory_as_srv->start();
+
+	m_arm_has_active_joint_trajectory_goal = false;
 
 	ROS_INFO("arm actions started");
 
@@ -76,6 +88,27 @@ void ArmBridgeRosOrocos::updateHook()
 
 	ros::spinOnce();
 
+	// check if trajectory controller is finished
+	bool areTrajectoryControllersDone = true;
+
+	for (size_t i = 0; i < m_youbot_arm_dof; ++i)
+	{
+		if (m_trajectory_controller[i].isTrajectoryControllerActive())
+		{
+			areTrajectoryControllersDone = false;
+			break;
+		}
+	}
+
+	if (areTrajectoryControllersDone && m_arm_has_active_joint_trajectory_goal)
+	{
+		m_arm_has_active_joint_trajectory_goal = false;
+		control_msgs::FollowJointTrajectoryResult trajectoryResult;
+		trajectoryResult.error_code = trajectoryResult.SUCCESSFUL;
+		m_arm_active_joint_trajectory_goal.setSucceeded(trajectoryResult, "trajectory successful");
+	}
+
+
 	// check if new joint position arrived at topic
 	if (brics_joint_positions.read(m_brics_joint_positions) == NoData)
 		return;
@@ -92,6 +125,113 @@ void ArmBridgeRosOrocos::stopHook()
 void ArmBridgeRosOrocos::cleanupHook()
 {
 	TaskContext::cleanupHook();
+}
+
+void ArmBridgeRosOrocos::armJointTrajectoryGoalCallback(actionlib::ActionServer<control_msgs::FollowJointTrajectoryAction>::GoalHandle youbot_arm_goal)
+{
+	trajectory_msgs::JointTrajectory trajectory = youbot_arm_goal.getGoal()->trajectory;
+
+	// validate that the correct number of joints is provided in the goal
+	if (trajectory.joint_names.size() != m_youbot_arm_dof)
+	{
+		log(Error) << "Trajectory is malformed! Goal has " << trajectory.joint_names.size() << " joint names, but only " << m_youbot_arm_dof << " joints are supported" << endlog();
+		youbot_arm_goal.setRejected();
+		return;
+	}
+
+	std::vector<JointTrajectory> jointTrajectories(m_youbot_arm_dof);
+
+	// convert from the ROS trajectory representation to the controller's representation
+	std::vector<std::vector< double > > positions(m_youbot_arm_dof);
+	std::vector<std::vector< double > > velocities(m_youbot_arm_dof);
+	std::vector<std::vector< double > > accelerations(m_youbot_arm_dof);
+	TrajectorySegment segment;
+	for (size_t i = 0; i < trajectory.points.size(); i++)
+	{
+		trajectory_msgs::JointTrajectoryPoint point = trajectory.points[i];
+		// validate the trajectory point
+		if ((point.positions.size() != m_youbot_arm_dof
+						|| point.velocities.size() != m_youbot_arm_dof
+						|| point.accelerations.size() != m_youbot_arm_dof))
+		{
+			log(Error) << "A trajectory point is malformed! " << m_youbot_arm_dof << " positions, velocities and accelerations must be provided" << endlog();
+			youbot_arm_goal.setRejected();
+			return;
+		}
+
+		for (size_t j = 0; j < m_youbot_arm_dof; j++)
+		{
+			segment.positions = point.positions[j];
+			segment.velocities = point.velocities[j];
+			segment.accelerations = point.accelerations[j];
+			segment.time_from_start = boost::posix_time::microsec(point.time_from_start.toNSec()/1000);
+			jointTrajectories[j].segments.push_back(segment);
+		}
+	}
+
+	for (size_t j = 0; j < m_youbot_arm_dof; j++)
+	{
+        jointTrajectories[j].start_time = boost::posix_time::microsec_clock::local_time(); //TODO is this correct to set the trajectory start time to now
+	}
+
+
+	// cancel the old goal
+	/*
+	if (m_arm_has_active_joint_trajectory_goal)
+	{
+		m_arm_active_joint_trajectory_goal.setCanceled();
+		m_arm_has_active_joint_trajectory_goal = false;
+		for (int i = 0; i < m_youbot_arm_dof; ++i)
+		{
+			youBotConfiguration.youBotArmConfigurations[armIndex].youBotArm->getArmJoint(i + 1).cancelTrajectory();
+		}
+	}
+	 */
+
+	// replace the old goal with the new one
+	youbot_arm_goal.setAccepted();
+	m_arm_active_joint_trajectory_goal = youbot_arm_goal;
+	m_arm_has_active_joint_trajectory_goal = true;
+
+
+	// send the trajectory to the controller
+	for (size_t i = 0; i < m_youbot_arm_dof; ++i)
+	{
+		try
+		{
+			// youBot joints start with 1 not with 0 -> i + 1
+			m_trajectory_controller[i].setTrajectory(jointTrajectories[i]);
+			log(Info) << "set trajectories " << i << endlog();
+		} catch (std::exception& e)
+		{
+			std::string errorMessage = e.what();
+			log(Warning) << "Cannot set trajectory for joint " << i + 1 << "\n " << errorMessage.c_str() << endlog();
+		}
+	}
+	log(Info) << "set all trajectories" << endlog();
+}
+
+void ArmBridgeRosOrocos::armJointTrajectoryCancelCallback(actionlib::ActionServer<control_msgs::FollowJointTrajectoryAction>::GoalHandle youbot_arm_goal)
+{
+	// stop the controller
+	for (size_t i = 0; i < m_youbot_arm_dof; ++i)
+	{
+		try
+		{
+			m_trajectory_controller[i].cancelCurrentTrajectory();
+		} catch (std::exception& e)
+		{
+			std::string errorMessage = e.what();
+			log(Warning) << "Cannot stop joint " << i + 1 << "\n" << errorMessage.c_str();
+		}
+	}
+
+	if (m_arm_active_joint_trajectory_goal == youbot_arm_goal)
+	{
+		// Marks the current goal as canceled.
+		youbot_arm_goal.setCanceled();
+		m_arm_has_active_joint_trajectory_goal = false;
+	}
 }
 
 void ArmBridgeRosOrocos::writeJointPositionsToPort(brics_actuator::JointPositions brics_joint_positions, std_msgs::Float64MultiArray& orocos_data_array, OutputPort<std_msgs::Float64MultiArray>& output_port)
