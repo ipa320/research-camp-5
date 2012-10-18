@@ -1,0 +1,39 @@
+import("YouBot_executive")
+
+loadComponent("executive","YouBot::YouBot_executive")
+
+#
+# Connections policies
+#
+# RT (or unbuffered)
+var ConnPolicy cp_rt;
+cp_rt.type = DATA;  
+cp_rt.lock_policy = LOCK_FREE; 
+
+#
+# Connections
+# 
+connect("executive.ArmJointAnglesSetpoint","ArmPoseController.angles_setpoint",cp_rt)
+connect("executive.HBase0Setpoint", "BasePoseController.H_vp_0", cp_rt)
+ 
+connect("executive.CartSpaceSetpoint","CartesianController.Hvp0",cp_rt)
+connect("executive.CartSpaceStiffness","CartesianController.StiffnessCC",cp_rt) 
+connect("executive.HtipCC","CartesianController.HtipCC",cp_rt)
+
+connect("YouBotKinematics.H_tooltip_0", "executive.Htip0", cp_rt)
+connect("ArmPoseController.joints_angle_output", "executive.ArmJointStates", cp_rt)
+connect("BasePoseController.H_base_0_output", "executive.H_base_0", cp_rt)
+connect("CartesianController.W_tooltip_00", "executive.Wtip0", cp_rt)
+
+connect("executive.gripper_cmd","driver.Gripper1.gripper_cmd_position",cp_rt)
+
+connect("executive.ArmJointActive","ArmPoseController.active_joint",cp_rt)
+connect("executive.BaseJointActive","BasePoseController.active_joint",cp_rt)
+
+#
+# Start running
+#
+executive.configure
+executive.start
+
+
