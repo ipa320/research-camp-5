@@ -1,24 +1,29 @@
 <package>
-  <description brief="raw_object_finder">
-
-     raw_object_finder
-
-  </description>
-  <author>Christian Mueller</author>
-  <license>BSD</license>
+  <description brief="raw_object_finder"></description>
+  <author></author>
+  <license></license>
   <review status="unreviewed" notes=""/>
-  <url>http://ros.org/wiki/raw_object_finder</url>
+  <url></url>
   <depend package="roscpp"/>
-  <depend package="tf"/>
-  <depend package="pcl_ros"/>
-  <depend package="pcl"/>
-  <depend package="opencv2"/>
-  <depend package="cv_bridge"/>
-  <depend package="sensor_msgs"/>
-  <depend package="geometry_msgs"/>
-  <depend package="std_srvs"/>
-  <depend package="raw_srvs"/>
-  <depend package="raw_msgs"/>
-  <depend package="object_manipulation_msgs"/>
+  <depend package="std_msgs"/>
+  <depend package="rospy"/>
+  <depend package="dynamic_reconfigure"/>
+  	<depend package="roscpp"/>
+  	<depend package="tf"/>
+  	<depend package="pcl"/>
+  	<depend package="pcl_ros"/>
+  	<depend package="opencv2"/>
+  	<depend package="cv_bridge"/>
+  	<depend package="sensor_msgs"/>
+  	<depend package="geometry_msgs"/>
+  	<depend package="std_srvs"/>
+  	<depend package="raw_srvs"/>
+  	<depend package="raw_msgs"/>
+  	<depend package="object_manipulation_msgs"/>
+  /* protected region additional manifest statements on begin */
+  /* protected region additional manifest statements end */
+  
   
 </package>
+
+

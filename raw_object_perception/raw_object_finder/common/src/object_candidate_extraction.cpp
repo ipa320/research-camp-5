@@ -31,17 +31,16 @@ CObjectCandidateExtraction::CObjectCandidateExtraction() {
 	this->nodeName = "---/CObjectCandidateExtraction";
 }
 
-CObjectCandidateExtraction::CObjectCandidateExtraction(ros::NodeHandle &nh, std::string nodeName,
-		float fDistance) {
+CObjectCandidateExtraction::CObjectCandidateExtraction(double threshold_points_above_lower_plane, double min_points_per_objects, double spherical_distance) {
 
-	horizontalSurfaceExtractor = CPlaneExtraction(nodeName);
-	this->nodeName = nodeName + "/CObjectCandidateExtraction";
-	this->fDistance = fDistance; // std max Kinect distance
-	this->nh = nh;
+	this->nodeName = "/CObjectCandidateExtraction";
+	horizontalSurfaceExtractor = CPlaneExtraction(this->nodeName);
 
-	this->nh.param("threshold_points_above_lower_plane", this->threshold_point_above_lower_plane, 0.02);
+	this->fDistance = spherical_distance; // std max Kinect distance
+
+	this->threshold_point_above_lower_plane = threshold_points_above_lower_plane;
 	ROS_INFO_STREAM("   parameter 'threshold_points_above_lower_plane': " << this->threshold_point_above_lower_plane);
-	this->nh.param("min_points_per_objects", this->min_points_per_objects, 10);
+	this->min_points_per_objects = min_points_per_objects;
 	ROS_INFO_STREAM("   parameter 'min_points_per_objects': " << this->min_points_per_objects);
 
 

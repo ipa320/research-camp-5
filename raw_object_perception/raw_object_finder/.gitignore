@@ -1,10 +1,11 @@
-CMakeCache.txt
-CMakeFiles/
-src/.svn
-include/.svn
-/bin
-/lib
-cmake_install.cmake
-manifest.xml~
-/build
+*.cfgc
+Debug/
+docs/
+__init__.py
+cfg/cpp/
+.cproject
+.project
+.metadata
+src/raw_object_finder/
+.settings
 
