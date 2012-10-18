@@ -71,11 +71,13 @@ class GripperActionServer:
 			self.as_move_joint_direct.set_aborted(result)
 			return
 		
+		timeout = rospy.Duration(3)
+		movement_start = rospy.get_rostime()
 		self.pub_joint_positions.publish(action_msgs.goal)
 		
 		#wait to reach the goal position
-		while (not rospy.is_shutdown()):
-			if (self.is_goal_reached(action_msgs.goal)):
+		while (not rospy.is_shutdown):
+			if (self.is_goal_reached(action_msgs.goal) or (rospy.get_rostime() > (movement_start + timeout))):
 				break
 					
 		result = raw_arm_navigation.msg.MoveToJointConfigurationResult()

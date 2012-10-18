@@ -1,53 +1,35 @@
-aluprofil_s40_100_gray_1:
-  object_type: aluprofil_s40_100_gray
+simple_box_1:
+  object_type: simple_box
   model_type: urdf.xacro
   position: [1.7, -0.9, 0.2]
   orientation: [0, 0, 0]
-    
-aluprofil_f20_100_gray_1:
-  object_type: aluprofil_f20_100_gray
-  model_type: urdf.xacro
-  position: [-1.7, -0.8, 0.2]
-  orientation: [0, 0, 0.4]
   
-nut_m20_1:
-  object_type: nut_m20
-  model_type: urdf.xacro
-  position: [-1.7, 0.6, 0.2]
-  orientation: [0, 0, 0]
-  
-nut_m30_1:
-  object_type: nut_m30
+simple_box_2:
+  object_type: simple_box
   model_type: urdf.xacro
   position: [1.7, 0.2, 0.2]
   orientation: [0, 0, 0]
   
-nut_m30_2:
-  object_type: nut_m30
-  model_type: urdf.xacro
-  position: [-1.8, -0.6, 0.2]
-  orientation: [0, 0, 0]
-  
-adapter_sleeve_v20_1:
-  object_type: adapter_sleeve_v20
+simple_box_3:
+  object_type: simple_box
   model_type: urdf.xacro
   position: [1.7, -0.1, 0.2]
   orientation: [0, 0, 0]
   
-adapter_sleeve_r20_1:
-  object_type: adapter_sleeve_r20
+simple_box_4:
+  object_type: simple_box
   model_type: urdf.xacro
   position: [1.7, 0.0, 0.2]
   orientation: [0, 0, 0]
 
-bolt_m20_100_1:
-  object_type: bolt_m20_100
+simple_box_5:
+  object_type: simple_box
   model_type: urdf.xacro
   position: [1.7, 0.7, 0.2]
   orientation: [0, 0, 0]
   
-bolt_m20_180_1:
-  object_type: bolt_m20_180
+simple_box_6:
+  object_type: simple_box
   model_type: urdf.xacro
   position: [1.7, -0.7, 0.2]
   orientation: [0, 0, 0]
