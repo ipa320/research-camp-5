@@ -3,6 +3,6 @@
 
 	<include filename="$(find raw_gazebo_objects)/ros/templates/box.urdf.xacro" />
 
-	<xacro:box_template name="simple_box" length="0.05" width="0.01" height="0.01" color="black"/>
+	<xacro:box_template name="simple_box" length="0.05" width="0.02" height="0.02" color="black"/>
 	
 </robot>
