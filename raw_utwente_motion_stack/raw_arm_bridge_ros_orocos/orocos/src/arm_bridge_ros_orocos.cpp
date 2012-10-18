@@ -97,7 +97,10 @@ void ArmBridgeRosOrocos::cleanupHook()
 void ArmBridgeRosOrocos::writeJointPositionsToPort(brics_actuator::JointPositions brics_joint_positions, std_msgs::Float64MultiArray& orocos_data_array, OutputPort<std_msgs::Float64MultiArray>& output_port)
 {
 	for (size_t i = 0; i < brics_joint_positions.positions.size(); i++)
+	{	
+		std::cout << brics_joint_positions.positions[i].value << " ";
 		orocos_data_array.data[i] = brics_joint_positions.positions[i].value;
+	}
 
 	output_port.write(orocos_data_array);
 }
@@ -108,11 +111,14 @@ void ArmBridgeRosOrocos::armJointConfigurationGoalCallback(actionlib::ActionServ
 
 	joint_cfg_goal.setAccepted();
 
-	writeJointPositionsToPort(m_brics_joint_positions, m_orocos_joint_positions, orocos_joint_positions);
+	std::cout << std::endl << std::endl;
 
+	writeJointPositionsToPort(joint_cfg_goal.getGoal()->goal, m_orocos_joint_positions, orocos_joint_positions);
 
+	std::cout << std::endl << std::endl;
+
+	
 	// TDB: check if pose is reached
-
 
 	joint_cfg_goal.setSucceeded();
 }
@@ -153,9 +159,9 @@ void ArmBridgeRosOrocos::armCartesianPoseWithImpedanceCtrlGoalCallback(actionlib
 	m_orocos_homog_matrix.data[14] = 0.0;
 	m_orocos_homog_matrix.data[15] = 1.0;
 
-	m_orocos_arm_stiffness.data[0] = 10;
-	m_orocos_arm_stiffness.data[1] = 10;
-	m_orocos_arm_stiffness.data[2] = 10;
+	m_orocos_arm_stiffness.data[0] = 200;
+	m_orocos_arm_stiffness.data[1] = 200;
+	m_orocos_arm_stiffness.data[2] = 200;
 	m_orocos_arm_stiffness.data[3] = 10;
 	m_orocos_arm_stiffness.data[4] = 10;
 	m_orocos_arm_stiffness.data[5] = 10;
@@ -163,8 +169,9 @@ void ArmBridgeRosOrocos::armCartesianPoseWithImpedanceCtrlGoalCallback(actionlib
 	m_orocos_arm_stiffness.data[7] = 0;
 	m_orocos_arm_stiffness.data[8] = 0;
 
+
 	/* identity */
-	m_orocos_arm_stiffness.data[0] = m_orocos_arm_stiffness.data[5] = m_orocos_arm_stiffness.data[10] = m_orocos_arm_stiffness.data[15] = 1.0;
+	//m_orocos_arm_stiffness.data[0] = m_orocos_arm_stiffness.data[5] = m_orocos_arm_stiffness.data[10] = m_orocos_arm_stiffness.data[15] = 1.0;
 
 	std::cout << "write homog matrix to output port" << std::endl;
 
