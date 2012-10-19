@@ -81,11 +81,11 @@ connect("YouBotKinematics.output_energy_arm","ArmPoseController.input_energy",cp
 connect("ArmPoseController.output_energy","YouBotKinematics.input_energy_arm",cp_rt);
 
 # YouBotKinematics <-> BasePoseController
-connect("YouBotKinematics.W_base_00", "BasePoseController.W_base_00", cp_rt);
-connect("BasePoseController.H_base_0_output", "YouBotKinematics.H_base_0", cp_rt);
+#connect("YouBotKinematics.W_base_00", "BasePoseController.W_base_00", cp_rt);
+#connect("BasePoseController.H_base_0_output", "YouBotKinematics.H_base_0", cp_rt);
 # PL connections
-connect("YouBotKinematics.output_energy_base","BasePoseController.input_energy",cp_rt);
-connect("BasePoseController.output_energy","YouBotKinematics.input_energy_base",cp_rt);
+#connect("YouBotKinematics.output_energy_base","BasePoseController.input_energy",cp_rt);
+#connect("BasePoseController.output_energy","YouBotKinematics.input_energy_base",cp_rt);
 
 # BasePoseController <-> Odometry
 connect("BasePoseController.T_base_00", "Odometry.T_base_00", cp_rt);
