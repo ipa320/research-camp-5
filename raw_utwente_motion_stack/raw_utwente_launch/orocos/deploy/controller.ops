@@ -2,8 +2,7 @@ import("CartesianController");
 import("YouBotKinematics");
 import("ArmPoseController");
 import("BasePoseController");
-#import("Odometry");
-#import("amcl_odom_combine");
+import("Odometry");
 
 import("YouBot_adapters");
 import("TSimAdapters");
@@ -23,7 +22,7 @@ loadComponent("CartesianController","motion_stack::CartesianController");
 loadComponent("YouBotKinematics","motion_stack::YouBotKinematics");
 loadComponent("ArmPoseController","motion_stack::ArmPoseController");
 loadComponent("BasePoseController","motion_stack::BasePoseController");
-#loadComponent("Odometry","amcl_odom_combine");
+loadComponent("Odometry", "motion_stack::Odometry");
 
 #
 # Activities / threads
@@ -34,7 +33,7 @@ setMasterSlaveActivity("controlloop_scheduler", "arm_state_to_control");
 setMasterSlaveActivity("controlloop_scheduler", "CartesianController");
 setMasterSlaveActivity("controlloop_scheduler", "YouBotKinematics");
 setMasterSlaveActivity("controlloop_scheduler", "ArmPoseController");
-#setMasterSlaveActivity("controlloop_scheduler", "Odometry");
+setMasterSlaveActivity("controlloop_scheduler", "Odometry");
 setMasterSlaveActivity("controlloop_scheduler", "BasePoseController");
 
 setMasterSlaveActivity("controlloop_scheduler", "control_to_base");
@@ -58,7 +57,6 @@ cp_rt.lock_policy = UNSYNC;
 # Arm
 var std.vector<ctrl_modes>  arm_ctrl_modes=std.vector<ctrl_modes>(5,TORQUE);
 driver.Arm1.setControlModes(arm_ctrl_modes);
-print.ln("middle");
 control_to_arm.initialize(TORQUE,5);
 arm_state_to_control.initialize(5);
 
@@ -68,8 +66,6 @@ driver.Base.setControlModes(base_ctrl_modes);
 control_to_base.initialize(TORQUE,4);
 base_state_to_control.initialize(4);
 
-print.ln("Connect")
-
 #
 # Connect ports
 #
@@ -77,24 +73,23 @@ print.ln("Connect")
 connect("CartesianController.W_tooltip_00", "YouBotKinematics.W_tooltip_00", cp_rt);
 connect("YouBotKinematics.T_tooltip_00", "CartesianController.T_tooltip_00", cp_rt);
 connect("YouBotKinematics.H_tooltip_0", "CartesianController.Htip0", cp_rt);
-
 # YouBotKinematics <-> ArmPoseController
 connect("YouBotKinematics.torques_cmd", "ArmPoseController.joints_torque", cp_rt);
 connect("ArmPoseController.joints_angle_output", "YouBotKinematics.angles_measured", cp_rt);
+# PL connecitions
+connect("YouBotKinematics.output_energy_arm","ArmPoseController.input_energy",cp_rt);
+connect("ArmPoseController.output_energy","YouBotKinematics.input_energy_arm",cp_rt);
 
 # YouBotKinematics <-> BasePoseController
-#connect("YouBotKinematics.W_base_00", "BasePoseController.W_base_00", cp_rt);
-#connect("BasePoseController.H_base_0_output", "YouBotKinematics.H_base_0", cp_rt);
+connect("YouBotKinematics.W_base_00", "BasePoseController.W_base_00", cp_rt);
+connect("BasePoseController.H_base_0_output", "YouBotKinematics.H_base_0", cp_rt);
+# PL connections
+connect("YouBotKinematics.output_energy_base","BasePoseController.input_energy",cp_rt);
+connect("BasePoseController.output_energy","YouBotKinematics.input_energy_base",cp_rt);
 
 # BasePoseController <-> Odometry
-#connect("BasePoseController.T_base_00", "Odometry.T", cp_rt);
-#connect("Odometry.H_base_0", "BasePoseController.H_base_0", cp_rt);
-
-#var ConnPolicy cp_ros;
-#cp_ros.transport = 3;
-#cp_ros.name_id = "/amcl_pose";
-#stream("Odometry.amcl_pose", cp_ros);
-
+connect("BasePoseController.T_base_00", "Odometry.T_base_00", cp_rt);
+connect("Odometry.H_base_map", "BasePoseController.H_base_0", cp_rt);
 
 # ArmPoseController <-> OODL
 connect("ArmPoseController.Arm_torque","control_to_arm.input_cmd_signal",cp_rt);
@@ -128,10 +123,11 @@ YouBotKinematics.configure
 YouBotKinematics.start
 ArmPoseController.configure
 ArmPoseController.start
-#Odometry.configure
-#Odometry.start
+Odometry.configure
+Odometry.start
 BasePoseController.configure
 BasePoseController.start
+
 
 #
 # Configuration

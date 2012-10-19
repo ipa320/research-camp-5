@@ -7,11 +7,11 @@
 
 //stream("driver.Arm1.joint_state", ros_arm_js);
 
-//var ConnPolicy ros_base_js;
-//ros_base_js.transport = 3;
-//ros_base_js.name_id = "/youBot/base_joint_state";
+var ConnPolicy ros_base_js;
+ros_base_js.transport = 3;
+ros_base_js.name_id = "/youBot/base_joint_state";
 
-//stream("driver.Base.joint_state", ros_base_js);
+stream("driver.Base.joint_state", ros_base_js);
 
 #
 # Executive
@@ -42,10 +42,10 @@
 //ros_kin_3.name_id = "/youBot/YouBotKinematics/T_tooltip_00";
 //stream("YouBotKinematics.T_tooltip_00", ros_kin_3);
 
-//var ConnPolicy ros_kin_4;
-//ros_kin_4.transport = 3;
-//ros_kin_4.name_id = "/youBot/YouBotKinematics/H_tooltip_0";
-//stream("YouBotKinematics.H_tooltip_0", ros_kin_4);
+var ConnPolicy ros_kin_4;
+ros_kin_4.transport = 3;
+ros_kin_4.name_id = "/youBot/YouBotKinematics/H_tooltip_0";
+stream("YouBotKinematics.H_tooltip_0", ros_kin_4);
 
 
 //var ConnPolicy ros_ap_1;
@@ -59,10 +59,10 @@
 //stream("ArmPoseController.joints_angle_output", ros_ap_2);
 
 
-//var ConnPolicy ros_bp_1;
-//ros_bp_1.transport = 3;
-//ros_bp_1.name_id = "/youBot/BasePoseController/Base_torque";
-//stream("BasePoseController.Base_torque", ros_bp_1);
+var ConnPolicy ros_bp_1;
+ros_bp_1.transport = 3;
+ros_bp_1.name_id = "/youBot/BasePoseController/Base_torque";
+stream("BasePoseController.Base_torque", ros_bp_1);
 
 //var ConnPolicy ros_bp_2;
 //ros_bp_2.transport = 3;
@@ -75,8 +75,8 @@
 //stream("BasePoseController.H_base_0_output", ros_bp_3);
 
 
-//var ConnPolicy ros_odo_1;
-//ros_odo_1.transport = 3;
-//ros_odo_1.name_id = "/youBot/Odometry/H_base_0";
-//stream("Odometry.H_base_0", ros_odo_1);
+var ConnPolicy ros_odo_1;
+ros_odo_1.transport = 3;
+ros_odo_1.name_id = "/youBot/Odometry/H_base_0";
+stream("Odometry.H_base_0", ros_odo_1);
 
