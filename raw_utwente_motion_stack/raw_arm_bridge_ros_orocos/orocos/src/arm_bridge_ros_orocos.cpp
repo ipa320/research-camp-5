@@ -1,5 +1,6 @@
 #include "arm_bridge_ros_orocos.hpp"
 
+
 ArmBridgeRosOrocos::ArmBridgeRosOrocos(const string& name) :  TaskContext(name, PreOperational), m_youbot_arm_dof(5)
 {
 	for(size_t i=0; i < m_youbot_arm_dof; ++i)
@@ -26,11 +27,18 @@ ArmBridgeRosOrocos::ArmBridgeRosOrocos(const string& name) :  TaskContext(name, 
 	orocos_arm_stiffness.setDataSample(m_orocos_arm_stiffness);
 	orocos_HtipCC.setDataSample(m_orocos_HtipCC);
 
+	// Ports
 	this->addPort("brics_joint_positions", brics_joint_positions).doc("Input of joint positions in BRICS data types");
 	this->addPort("orocos_joint_positions", orocos_joint_positions).doc("Output of joint positions in Orocos data type");
 	this->addPort("orocos_homog_matrix", orocos_homog_matrix).doc("Output of a Cartesian Pose as homogeneous coordinates in Orocos data type");
 	this->addPort("orocos_arm_stiffness", orocos_arm_stiffness).doc("Output of a arm stiffness to set");
 	this->addPort("orocos_HtipCC", orocos_HtipCC).doc("Output of HtipCC to set");
+
+	//Operations
+	m_joint_space_ctrl_srv = this->provides("Executive")->getOperation("jointspaceControl");
+	m_cartesian_ctrl_srv = this->provides("Executive")->getOperation("cartesianControl");
+	m_gravity_compensation_ctrl_srv = this->provides("Executive")->getOperation("gravityCompensation");
+
 }
 
 ArmBridgeRosOrocos::~ArmBridgeRosOrocos()
@@ -249,16 +257,22 @@ void ArmBridgeRosOrocos::armJointConfigurationGoalCallback(actionlib::ActionServ
 {
 	ROS_INFO("MoveToJointConfigurationDirect action called");
 
+	if(!m_joint_space_ctrl_srv.ready())
+	{
+		std::cout << "<<Executive.jointspaceControl>> service not available" << std::endl;
+		joint_cfg_goal.setAborted();
+	}
+
+	m_joint_space_ctrl_srv();
+
 	joint_cfg_goal.setAccepted();
 
-	std::cout << std::endl << std::endl;
-
 	writeJointPositionsToPort(joint_cfg_goal.getGoal()->goal, m_orocos_joint_positions, orocos_joint_positions);
-
 	std::cout << std::endl << std::endl;
 
 	
 	// TDB: check if pose is reached
+
 
 	joint_cfg_goal.setSucceeded();
 }
@@ -268,31 +282,38 @@ void ArmBridgeRosOrocos::armCartesianPoseWithImpedanceCtrlGoalCallback(actionlib
 	btVector3 trans_vec;
 	btQuaternion bt_quat;
 
-	geometry_msgs::PoseStamped goal_pose = cartesian_pose_goal.getGoal()->goal;
-
 	ROS_INFO("MoveToCartesianPoseDirect action called");
 
-	std::cout << "\nx: " << goal_pose.pose.position.x << " y: " << goal_pose.pose.position.y << " z: " << goal_pose.pose.position.z;
+	if(!m_cartesian_ctrl_srv.ready())
+	{
+		std::cout << "<<Executive.cartesianControl>> service not available" << std::endl;
+		cartesian_pose_goal.setAborted();
+	}
 
-	// create rotation matrix from quaternion
-	tf::quaternionMsgToTF(goal_pose.pose.orientation, bt_quat);
-	btMatrix3x3 rot_mat = btMatrix3x3(bt_quat);
+	m_cartesian_ctrl_srv();
 
-	double r, p, y;
-	rot_mat.getRPY(r, p, y);
-	std::cout << " -- r: " << r << " p: " << p << " y: " << y << std::endl;
 
-	m_orocos_homog_matrix.data[0] = rot_mat[0][0];
-	m_orocos_homog_matrix.data[1] = rot_mat[0][1];
-	m_orocos_homog_matrix.data[2] = rot_mat[0][2];
+	geometry_msgs::PoseStamped goal_pose = cartesian_pose_goal.getGoal()->goal;
+
+	std::cout << "\nx: " << goal_pose.pose.position.x << " y: " << goal_pose.pose.position.y << " z: " << goal_pose.pose.position.z << std::endl;
+
+	double qw, qx, qy, qz;
+	qx = goal_pose.pose.orientation.x;
+	qy = goal_pose.pose.orientation.y;
+	qz = goal_pose.pose.orientation.z;
+	qw = goal_pose.pose.orientation.w;
+
+	m_orocos_homog_matrix.data[0] = pow(qw,2) + pow(qx,2) - pow(qy,2) - pow(qz,2);
+	m_orocos_homog_matrix.data[1] = 2*qx*qy - 2*qz*qw;
+	m_orocos_homog_matrix.data[2] = 2*qx*qz + 2*qy*qw;
 	m_orocos_homog_matrix.data[3] = goal_pose.pose.position.x;
-	m_orocos_homog_matrix.data[4] = rot_mat[1][0];
-	m_orocos_homog_matrix.data[5] = rot_mat[1][1];
-	m_orocos_homog_matrix.data[6] = rot_mat[1][2];
+	m_orocos_homog_matrix.data[4] = 2*qx*qy + 2*qz*qw;
+	m_orocos_homog_matrix.data[5] = pow(qw,2) - pow(qx,2) + pow(qy,2) - pow(qz,2);
+	m_orocos_homog_matrix.data[6] = 2*qy*qz - 2*qx*qw;
 	m_orocos_homog_matrix.data[7] = goal_pose.pose.position.y;
-	m_orocos_homog_matrix.data[8] = rot_mat[2][0];
-	m_orocos_homog_matrix.data[9] = rot_mat[2][1];
-	m_orocos_homog_matrix.data[10] = rot_mat[2][2];
+	m_orocos_homog_matrix.data[8] = 2*qx*qz - 2*qy*qw;
+	m_orocos_homog_matrix.data[9] = 2*qy*qz + 2*qx*qw;
+	m_orocos_homog_matrix.data[10] = pow(qw,2) - pow(qx,2) - pow(qy,2) + pow(qz,2);
 	m_orocos_homog_matrix.data[11] = goal_pose.pose.position.z;
 	m_orocos_homog_matrix.data[12] = 0.0;
 	m_orocos_homog_matrix.data[13] = 0.0;
