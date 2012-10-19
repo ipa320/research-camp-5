@@ -5,9 +5,6 @@ require("ros_integration")
 
 loadComponent("arm_bridge", "ArmBridgeRosOrocos");
 
-arm_bridge.configure;
-arm_bridge.setPeriod(0.01);
-
 var ConnPolicy cp_rt;
 cp_rt.type = DATA;  // Use ''BUFFER'' or ''DATA''
 cp_rt.lock_policy = LOCK_FREE; // Use  ''LOCKED'', ''LOCK_FREE'' or ''UNSYNC''
@@ -48,6 +45,10 @@ stream("arm_bridge.brics_joint_positions", cp_ros);
 #ros_base_js.name_id = "/joint_states";
 #stream("driver.Base.joint_state", ros_base_js);
 
+connectPeers("arm_bridge", "executive")
+
+arm_bridge.configure;
+arm_bridge.setPeriod(0.01);
 
 # 
 # Start running
