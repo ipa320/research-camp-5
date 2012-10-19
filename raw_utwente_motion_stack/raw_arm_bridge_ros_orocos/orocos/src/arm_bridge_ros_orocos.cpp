@@ -33,12 +33,6 @@ ArmBridgeRosOrocos::ArmBridgeRosOrocos(const string& name) :  TaskContext(name, 
 	this->addPort("orocos_homog_matrix", orocos_homog_matrix).doc("Output of a Cartesian Pose as homogeneous coordinates in Orocos data type");
 	this->addPort("orocos_arm_stiffness", orocos_arm_stiffness).doc("Output of a arm stiffness to set");
 	this->addPort("orocos_HtipCC", orocos_HtipCC).doc("Output of HtipCC to set");
-
-	//Operations
-	m_joint_space_ctrl_srv = this->provides("Executive")->getOperation("jointspaceControl");
-	m_cartesian_ctrl_srv = this->provides("Executive")->getOperation("cartesianControl");
-	m_gravity_compensation_ctrl_srv = this->provides("Executive")->getOperation("gravityCompensation");
-
 }
 
 ArmBridgeRosOrocos::~ArmBridgeRosOrocos()
@@ -50,6 +44,25 @@ ArmBridgeRosOrocos::~ArmBridgeRosOrocos()
 
 bool ArmBridgeRosOrocos::configureHook()
 {
+	//Operations
+	if(this->getPeer("executive"))
+	{
+		std::cout << "get operation jointspaceControl" << std::endl;
+		m_joint_space_ctrl_op = this->getPeer("executive")->getOperation("jointspaceControl");
+
+		std::cout << "get operation useArmOnly" << std::endl;
+		m_use_arm_only_op = this->getPeer("executive")->getOperation("useArmOnly");
+
+		std::cout << "get operation cartesianControl" << std::endl;
+		m_cartesian_ctrl_op = this->getPeer("executive")->getOperation("cartesianControl");
+
+		std::cout << "get operation gravityCompensation" << std::endl;
+		m_gravity_compensation_ctrl_op = this->getPeer("executive")->getOperation("gravityCompensation");
+
+		std::cout << "get operation execute" << std::endl;
+		m_execute_op = this->getPeer("executive")->getOperation("execute");
+	}
+
 	return TaskContext::configureHook();
 }
 
@@ -257,18 +270,23 @@ void ArmBridgeRosOrocos::armJointConfigurationGoalCallback(actionlib::ActionServ
 {
 	ROS_INFO("MoveToJointConfigurationDirect action called");
 
-	if(!m_joint_space_ctrl_srv.ready())
-	{
-		std::cout << "<<Executive.jointspaceControl>> service not available" << std::endl;
-		joint_cfg_goal.setAborted();
-	}
-
-	m_joint_space_ctrl_srv();
-
 	joint_cfg_goal.setAccepted();
 
+	if(!m_joint_space_ctrl_op.ready() || !m_use_arm_only_op.ready() || !m_execute_op.ready())
+	{
+		std::cout << "operation(s) not available" << std::endl;
+		joint_cfg_goal.setAborted();
+		return;
+	}
+
+
+	std::cout << std::endl << std::endl;
 	writeJointPositionsToPort(joint_cfg_goal.getGoal()->goal, m_orocos_joint_positions, orocos_joint_positions);
 	std::cout << std::endl << std::endl;
+
+	m_joint_space_ctrl_op();
+	m_use_arm_only_op();
+	m_execute_op();
 
 	
 	// TDB: check if pose is reached
@@ -284,16 +302,18 @@ void ArmBridgeRosOrocos::armCartesianPoseWithImpedanceCtrlGoalCallback(actionlib
 
 	ROS_INFO("MoveToCartesianPoseDirect action called");
 
-	if(!m_cartesian_ctrl_srv.ready())
+	geometry_msgs::PoseStamped goal_pose = cartesian_pose_goal.getGoal()->goal;
+
+	cartesian_pose_goal.setAccepted();
+
+
+	if(!m_gravity_compensation_ctrl_op.ready() || !m_execute_op.ready())
 	{
-		std::cout << "<<Executive.cartesianControl>> service not available" << std::endl;
+		std::cout << "operation(s) not available" << std::endl;
 		cartesian_pose_goal.setAborted();
+		return;
 	}
 
-	m_cartesian_ctrl_srv();
-
-
-	geometry_msgs::PoseStamped goal_pose = cartesian_pose_goal.getGoal()->goal;
 
 	std::cout << "\nx: " << goal_pose.pose.position.x << " y: " << goal_pose.pose.position.y << " z: " << goal_pose.pose.position.z << std::endl;
 
@@ -331,16 +351,20 @@ void ArmBridgeRosOrocos::armCartesianPoseWithImpedanceCtrlGoalCallback(actionlib
 	m_orocos_arm_stiffness.data[8] = 0;
 
 
-	/* identity */
-	//m_orocos_arm_stiffness.data[0] = m_orocos_arm_stiffness.data[5] = m_orocos_arm_stiffness.data[10] = m_orocos_arm_stiffness.data[15] = 1.0;
+	// identity
+	//m_orocos_HtipCC.data[0] = m_orocos_arm_stiffness.data[5] = m_orocos_arm_stiffness.data[10] = m_orocos_arm_stiffness.data[15] = 1.0;
 
 	std::cout << "write homog matrix to output port" << std::endl;
 
-	cartesian_pose_goal.setAccepted();
-
-	orocos_HtipCC.write(m_orocos_HtipCC);
+	//orocos_HtipCC.write(m_orocos_HtipCC);
 	orocos_arm_stiffness.write(m_orocos_arm_stiffness);
 	orocos_homog_matrix.write(m_orocos_homog_matrix);
+
+
+	m_cartesian_ctrl_op();
+	m_execute_op();
+
+
 
 	// TDB: check if pose is reached
 
