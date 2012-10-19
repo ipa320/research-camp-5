@@ -86,9 +86,11 @@ class ArmBridgeRosOrocos: public TaskContext
     std_msgs::Float64MultiArray m_orocos_arm_stiffness;
     std_msgs::Float64MultiArray m_orocos_HtipCC;
 
-    OperationCaller<void(void)> m_joint_space_ctrl_srv;
-    OperationCaller<void(void)> m_cartesian_ctrl_srv;
-    OperationCaller<void(void)> m_gravity_compensation_ctrl_srv;
+    OperationCaller<void(void)> m_joint_space_ctrl_op;
+    OperationCaller<void(void)> m_use_arm_only_op;
+    OperationCaller<void(void)> m_cartesian_ctrl_op;
+    OperationCaller<void(void)> m_gravity_compensation_ctrl_op;
+    OperationCaller<void(void)> m_execute_op;
 
 	ros::NodeHandle m_nh;
 
