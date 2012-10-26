@@ -6,7 +6,6 @@
 // ROS message includes
 #include <sensor_msgs/PointCloud2.h>
 #include <sensor_msgs/PointCloud2.h>
-#include <raw_srvs/GetObjects.h>
 #include <brics_3d_msgs/GetSceneObjects.h>
 
 
@@ -27,7 +26,6 @@ class object_segmentation_ros
 		ros::Publisher plane_points_;
 		
 
-	ros::ServiceServer get_segmented_objects_;
 	ros::ServiceServer get_scene_objects_;
         
  
@@ -42,9 +40,6 @@ class object_segmentation_ros
   			server.setCallback(f);
         	
         	
-        		std::string get_segmented_objects_remap;
-        		n_.param("get_segmented_objects_remap", get_segmented_objects_remap, (std::string)"get_segmented_objects");
-        		get_segmented_objects_ = n_.advertiseService<raw_srvs::GetObjects::Request , raw_srvs::GetObjects::Response>(get_segmented_objects_remap, boost::bind(&object_segmentation_impl::callback_get_segmented_objects, &component_implementation_,_1,_2,component_config_));
         		std::string get_scene_objects_remap;
         		n_.param("get_scene_objects_remap", get_scene_objects_remap, (std::string)"get_scene_objects");
         		get_scene_objects_ = n_.advertiseService<brics_3d_msgs::GetSceneObjects::Request , brics_3d_msgs::GetSceneObjects::Response>(get_scene_objects_remap, boost::bind(&object_segmentation_impl::callback_get_scene_objects, &component_implementation_,_1,_2,component_config_));
@@ -67,7 +62,6 @@ class object_segmentation_ros
 				n_.param("spherical_distance", component_config_.spherical_distance, (double)2.5);
             
         }
-		
 		
         
 		

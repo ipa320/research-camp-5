@@ -3,7 +3,6 @@
   <node name="object_segmentation" loopRate="5.0">
     <publisher name="object_points" msg="sensor_msgs::PointCloud2"/>
     <publisher name="plane_points" msg="sensor_msgs::PointCloud2"/>
-    <serviceServer name="get_segmented_objects" msg="raw_srvs::GetObjects"/>
     <serviceServer name="get_scene_objects" msg="brics_3d_msgs::GetSceneObjects"/>
     <parameter name="camera_frame" value="/openni_rgb_optical_frame" type="string"/>
     <parameter name="extract_obj_in_rgb_img" value="false" type="bool"/>
