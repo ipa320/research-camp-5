@@ -75,6 +75,13 @@ Checkout the youbot-manipulation and research-camp-5 repository
      git clone git://github.com/b-it-bots/youbot-manipulation.git
      git clone git://github.com/b-it-bots/research-camp-5.git
 
+Checkout the BRICS_3D modules:
+
+     git clone https://github.com/blumenthal/brics_3d_experimental.git
+     svn co https://svn.best-of-robotics.org/brics/BROCRE/BRICS_3D/trunk brics_3d
+
+The promted user is "svnuser" and the password is "svnuser"
+	
 ### Compile Packages
 Once the ROS package path is extended with our new directory, 
 
