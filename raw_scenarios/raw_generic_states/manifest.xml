@@ -22,7 +22,7 @@
   <depend package="raw_base_placement"/>
   <depend package="actionlib"/>  
   <depend package="raw_srvs"/> 
-
+  <depend package="brics_3d_msgs" /> 
 </package>
 
 

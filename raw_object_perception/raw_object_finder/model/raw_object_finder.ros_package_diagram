@@ -79,6 +79,14 @@
       <element xmi:type="ros:Publisher" href="default.ros_package#//@node.0/@publisher.1"/>
       <layoutConstraint xmi:type="notation:Bounds" xmi:id="_ADRTZBhsEeKOQeIKn7GnXQ"/>
     </children>
+    <children xmi:type="notation:Node" xmi:id="_-kyEoBlGEeK2guPM2ujFMQ" type="3002">
+      <children xmi:type="notation:DecorationNode" xmi:id="_-kzSwBlGEeK2guPM2ujFMQ" type="5002"/>
+      <styles xmi:type="notation:DescriptionStyle" xmi:id="_-kyEoRlGEeK2guPM2ujFMQ"/>
+      <styles xmi:type="notation:FontStyle" xmi:id="_-kyEohlGEeK2guPM2ujFMQ" fontName="Ubuntu"/>
+      <styles xmi:type="notation:LineStyle" xmi:id="_-kyEoxlGEeK2guPM2ujFMQ"/>
+      <element xmi:type="ros:ServiceServer" href="default.ros_package#//@node.0/@serviceServer.1"/>
+      <layoutConstraint xmi:type="notation:Bounds" xmi:id="_-kyEpBlGEeK2guPM2ujFMQ" x="257" y="184"/>
+    </children>
     <element xmi:type="ros:Node" href="default.ros_package#//@node.0"/>
     <layoutConstraint xmi:type="notation:Bounds" xmi:id="_ZY3gIRhgEeKbB9SCYSNPzg" x="252" y="72"/>
   </children>

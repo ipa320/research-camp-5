@@ -4,6 +4,7 @@
     <publisher name="object_points" msg="sensor_msgs::PointCloud2"/>
     <publisher name="plane_points" msg="sensor_msgs::PointCloud2"/>
     <serviceServer name="get_segmented_objects" msg="raw_srvs::GetObjects"/>
+    <serviceServer name="get_scene_objects" msg="brics_3d_msgs::GetSceneObjects"/>
     <parameter name="camera_frame" value="/openni_rgb_optical_frame" type="string"/>
     <parameter name="extract_obj_in_rgb_img" value="false" type="bool"/>
     <parameter name="min_x" value="0.25" type="double"/>
@@ -14,7 +15,7 @@
     <parameter name="max_z" value="1.0" type="double"/>
     <parameter name="threshold_points_above_lower_plane" value="0.01" type="double"/>
     <parameter name="downsampling_distance" value="0.005" type="double"/>
-    <parameter name="min_points_per_objects" value="10"/>
+    <parameter name="min_points_per_objects" value="11"/>
     <parameter name="spherical_distance" value="2.5" type="double"/>
   </node>
   <depend>roscpp</depend>
@@ -29,4 +30,6 @@
   <depend>raw_srvs</depend>
   <depend>raw_msgs</depend>
   <depend>object_manipulation_msgs</depend>
+  <depend>brics_3d_ros</depend>
+  <depend>brics_3d_msgs</depend>
 </ros:Package>

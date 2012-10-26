@@ -7,6 +7,7 @@
 #include <sensor_msgs/PointCloud2.h>
 #include <sensor_msgs/PointCloud2.h>
 #include <raw_srvs/GetObjects.h>
+#include <brics_3d_msgs/GetSceneObjects.h>
 
 
 
@@ -27,6 +28,7 @@ class object_segmentation_ros
 		
 
 	ros::ServiceServer get_segmented_objects_;
+	ros::ServiceServer get_scene_objects_;
         
  
         object_segmentation_data component_data_;
@@ -42,7 +44,10 @@ class object_segmentation_ros
         	
         		std::string get_segmented_objects_remap;
         		n_.param("get_segmented_objects_remap", get_segmented_objects_remap, (std::string)"get_segmented_objects");
-        		get_segmented_objects_ = n_.advertiseService(get_segmented_objects_remap, &object_segmentation_impl::callback_get_segmented_objects, &component_implementation_);
+        		get_segmented_objects_ = n_.advertiseService<raw_srvs::GetObjects::Request , raw_srvs::GetObjects::Response>(get_segmented_objects_remap, boost::bind(&object_segmentation_impl::callback_get_segmented_objects, &component_implementation_,_1,_2,component_config_));
+        		std::string get_scene_objects_remap;
+        		n_.param("get_scene_objects_remap", get_scene_objects_remap, (std::string)"get_scene_objects");
+        		get_scene_objects_ = n_.advertiseService<brics_3d_msgs::GetSceneObjects::Request , brics_3d_msgs::GetSceneObjects::Response>(get_scene_objects_remap, boost::bind(&object_segmentation_impl::callback_get_scene_objects, &component_implementation_,_1,_2,component_config_));
         
 				object_points_ = 	n_.advertise<sensor_msgs::PointCloud2>("object_points", 1);
 				plane_points_ = 	n_.advertise<sensor_msgs::PointCloud2>("plane_points", 1);
@@ -58,10 +63,11 @@ class object_segmentation_ros
 				n_.param("max_z", component_config_.max_z, (double)1.0);
 				n_.param("threshold_points_above_lower_plane", component_config_.threshold_points_above_lower_plane, (double)0.01);
 				n_.param("downsampling_distance", component_config_.downsampling_distance, (double)0.005);
-				n_.param("min_points_per_objects", component_config_.min_points_per_objects, (int)10);
+				n_.param("min_points_per_objects", component_config_.min_points_per_objects, (int)11);
 				n_.param("spherical_distance", component_config_.spherical_distance, (double)2.5);
             
         }
+		
 		
         
 		

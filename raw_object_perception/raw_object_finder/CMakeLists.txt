@@ -50,6 +50,9 @@ rosbuild_add_library(raw_object_segmentation
 
 target_link_libraries(object_segmentation 
 	raw_object_segmentation
+	brics3d_world_model
+	brics3d_util
+	brics3d_core
 )
 
 # protected region user Cmake macros end #

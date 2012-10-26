@@ -3,6 +3,7 @@
 #include <sensor_msgs/PointCloud2.h>
 #include <sensor_msgs/PointCloud2.h>
 #include <raw_srvs/GetObjects.h>
+#include <brics_3d_msgs/GetSceneObjects.h>
 
 /* protected region user include files on begin */
 #include <raw_msgs/ObjectList.h>
@@ -18,6 +19,9 @@
 #include "toolbox_ros.h"
 #include "object_candidate_extraction.h"
 #include "struct_planar_surface.h"
+
+#include <brics_3d/worldModel/WorldModel.h>
+#include <brics_3d_ros/SceneGraphTypeCasts.h>
 /* protected region user include files end */
 
 class object_segmentation_config
@@ -64,6 +68,10 @@ class object_segmentation_impl
 
 	object_segmentation_config config;
 	object_segmentation_data data;
+
+	brics_3d::WorldModel* wm;
+	unsigned int sceneObjectsGroupId;
+	brics_3d::rsg::Attribute sceneObjectsTag;
 	/* protected region user member variables end */
 
 public:
@@ -79,6 +87,8 @@ public:
     	object_candidate_extractor = new CObjectCandidateExtraction(config.threshold_points_above_lower_plane, config.min_points_per_objects, config.spherical_distance);
 		roi_extractor = new RoiExtraction(config.camera_frame);
 
+		wm = new brics_3d::WorldModel();
+		initializeSceneGraph(wm);
 		/* protected region user configure end */
     }
     void update(object_segmentation_data &data, object_segmentation_config config)
@@ -88,9 +98,9 @@ public:
 		/* protected region user update end */
     }
 
-	bool callback_get_segmented_objects(raw_srvs::GetObjects::Request  &req, raw_srvs::GetObjects::Response &res )
+	bool callback_get_segmented_objects(raw_srvs::GetObjects::Request  &req, raw_srvs::GetObjects::Response &res , object_segmentation_config config)
 	{
-		/* protected region user implementation of service callback on begin */
+		/* protected region user implementation of service callback for get_segmented_objects on begin */
 		sensor_msgs::PointCloud2::ConstPtr const_input_cloud;
 		sensor_msgs::PointCloud2 input_cloud;
 		pcl::PointCloud<pcl::PointXYZRGB> point_cloud;
@@ -189,7 +199,135 @@ public:
 
 		res = last_segmented_objects;
 
-		/* protected region user implementation of service callback end */
+		/* protected region user implementation of service callback for get_segmented_objects end */
+		return true;
+	}
+	bool callback_get_scene_objects(brics_3d_msgs::GetSceneObjects::Request  &req, brics_3d_msgs::GetSceneObjects::Response &res , object_segmentation_config config)
+	{
+		/* protected region user implementation of service callback for get_scene_objects on begin */
+		//this->config = config; //update config (dynamic reconfigure)
+
+		sensor_msgs::PointCloud2::ConstPtr const_input_cloud;
+		sensor_msgs::PointCloud2 input_cloud;
+		pcl::PointCloud<pcl::PointXYZRGB> point_cloud;
+
+		vector<brics_3d::rsg::Attribute> attributes;
+		brics_3d::rsg::TimeStamp currentTime;
+		ros::Time time = ros::Time::now();
+		brics_3d::rsg::SceneGraphTypeCasts::convertRosMsgToTimeStamp(time, currentTime);
+
+		clearScene(wm, sceneObjectsGroupId);
+
+		do
+		{
+			const_input_cloud = ros::topic::waitForMessage<sensor_msgs::PointCloud2>("/camera/rgb/points", ros::Duration(5));
+			ROS_INFO("received point cloud data. Doing preprocessing now ...");
+			input_cloud = *const_input_cloud;
+
+		}while(!PreparePointCloud(input_cloud, point_cloud));
+
+		try {
+			// start with an empty set of segmented objects
+			last_segmented_objects.objects.clear();
+
+
+			// point cloud colors to color image
+			IplImage *image = ClusterToImage(input_cloud);
+
+			// find planes and objects
+			pcl::PointCloud<pcl::PointXYZRGBNormal> planar_point_cloud;
+			std::vector<structPlanarSurface> hierarchy_planes;
+
+			ROS_INFO("extract object candidates");
+			object_candidate_extractor->extractObjectCandidates(point_cloud, planar_point_cloud, hierarchy_planes);
+
+			// extract the clustered planes and objects
+			std::vector<pcl::PointCloud<pcl::PointXYZRGBNormal> > clustered_objects;
+			std::vector<pcl::PointCloud<pcl::PointXYZRGBNormal> > clustered_planes;
+			std::vector<sensor_msgs::PointCloud2> clustered_objects_msgs;
+			std::vector<geometry_msgs::PoseStamped> centroids_msgs;
+			std::vector<raw_msgs::Object> segmented_objects;
+
+			unsigned int object_count = 0;
+			for (unsigned int i = 0; i < hierarchy_planes.size(); i++) {
+				structPlanarSurface plane = hierarchy_planes[i];
+
+				// save for visualization
+				clustered_planes.push_back(plane.pointCloud);
+
+				// process all objects on the plane
+				for (unsigned int j = 0; j < plane.clusteredObjects.size(); j++) {
+					pcl::PointCloud<pcl::PointXYZRGBNormal> object = plane.clusteredObjects[j];
+
+					// convert to ROS point cloud for further processing
+					sensor_msgs::PointCloud2 cloud;
+					pcl::toROSMsg(object, cloud);
+					clustered_objects_msgs.push_back(cloud);
+
+					raw_msgs::Object segmented_object;
+
+					// find the image corresponding to the cluster
+					if(config.extract_obj_in_rgb_img)
+					{
+						sensor_msgs::ImagePtr img = ExtractRegionOfInterest(cloud, image);
+						segmented_object.rgb_image = *img;
+						segmented_object.rgb_image.header = input_cloud.header;
+					}
+
+					// find the centroid
+					geometry_msgs::PoseStamped centroid = ExtractCentroid(object);
+					centroids_msgs.push_back(centroid);
+
+					// save all information about the object for publication
+					segmented_object.cluster = cloud;
+					segmented_object.pose = centroid;
+					segmented_objects.push_back(segmented_object);
+
+					// add found object to scene graph
+					unsigned int sceneObjectTransformId;
+					brics_3d::HomogeneousMatrix44::IHomogeneousMatrix44Ptr objectPose(new brics_3d::HomogeneousMatrix44());
+					brics_3d::rsg::SceneGraphTypeCasts::convertPoseMsgToHomogeniousMatrix(centroid, objectPose);
+					attributes.clear();
+					attributes.push_back(sceneObjectsTag);
+					wm->scene.addTransformNode(this->sceneObjectsGroupId, sceneObjectTransformId, attributes, objectPose, currentTime);
+
+					// save for visualization
+					clustered_objects.push_back(object);
+					++object_count;
+				}
+			}
+
+			ROS_INFO("found %d objects on %d planes", object_count, hierarchy_planes.size());
+
+
+			// remember the result of the segmentation for the service
+			last_segmented_objects.stamp = ros::Time::now();
+			last_segmented_objects.objects = segmented_objects;
+
+
+			// publish the segmented objects
+			raw_msgs::ObjectList object_list;
+			object_list.objects = segmented_objects;
+
+
+			// publish the point clouds for visualization
+			PublishPointClouds(clustered_objects, data.out_object_points);
+			PublishPointClouds(clustered_planes, data.out_plane_points);
+		} catch (tf::TransformException &ex) {
+			ROS_WARN("No tf available: %s", ex.what());
+		}
+
+
+
+		vector<brics_3d::SceneObject> foundSceneObjects;
+		brics_3d::rsg::SceneGraphTypeCasts::convertRosMsgToAttributes(req.attributes, attributes);
+		attributes.push_back(sceneObjectsTag);
+		wm->getSceneObjects(attributes, foundSceneObjects);
+		ROS_INFO("Found %d scene objects", foundSceneObjects.size());
+		std::string to_frame = "/base_link";
+		brics_3d::rsg::SceneGraphTypeCasts::convertSceneObjectsToRosMsg(foundSceneObjects, res.results, to_frame);
+
+		/* protected region user implementation of service callback for get_scene_objects end */
 		return true;
 	}
     
@@ -206,6 +344,7 @@ public:
 
 		std::string from_frame = input.header.frame_id;
 		std::string to_frame = "/base_link";
+		ROS_DEBUG("from_frame: %s, to_frame %s", from_frame.c_str(), to_frame.c_str());
 		if (!tool_box.transformPointCloud(tf_listener, from_frame, to_frame, input, point_cloud_transformed)) {
 			 ROS_INFO("pointCloud tf transform...failed");
 			 return false;
@@ -299,6 +438,26 @@ public:
 		pcl::toROSMsg(point_cloud_rgb, cloud_rgb);
 
 		published_data = cloud_rgb;
+	}
+
+	void initializeSceneGraph(brics_3d::WorldModel *wm) {
+		unsigned int groupId;
+		vector<brics_3d::rsg::Attribute> attributes;
+		sceneObjectsTag = brics_3d::rsg::Attribute("name","scene_object");
+
+		attributes.clear();
+		attributes.push_back(brics_3d::rsg::Attribute("name","scene"));
+		wm->scene.addGroup(wm->getRootNodeId(), groupId, attributes);
+		sceneObjectsGroupId = groupId;
+	}
+
+	// Delete all childs of a group node defined by the subGraphId
+	void clearScene(brics_3d::WorldModel* wm, unsigned int subGraphId) {
+		vector<unsigned int> childIds;
+		wm->scene.getGroupChildren(subGraphId, childIds);
+		for (unsigned int childId = 0; childId < childIds.size(); ++childId) {
+			wm->scene.deleteNode(childIds[childId]);
+		}
 	}
 	/* protected region user additional functions end */
     
