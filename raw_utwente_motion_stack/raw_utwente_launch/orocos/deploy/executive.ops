@@ -19,6 +19,7 @@ connect("executive.HBase0Setpoint", "BasePoseController.H_vp_0", cp_rt)
 connect("executive.CartSpaceSetpoint","CartesianController.Hvp0",cp_rt)
 connect("executive.CartSpaceStiffness","CartesianController.StiffnessCC",cp_rt) 
 connect("executive.HtipCC","CartesianController.HtipCC",cp_rt)
+connect("executive.CartSpaceDamping", "CartesianController.CartesianDamping", cp_rt)
 
 connect("YouBotKinematics.H_tooltip_0", "executive.Htip0", cp_rt)
 connect("ArmPoseController.joints_angle_output", "executive.ArmJointStates", cp_rt)

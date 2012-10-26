@@ -51,11 +51,14 @@ SET (CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_HOME_DIRECTORY}/bin)
 #include all CMakeList.txt files within this package
 #each generates one library or application	
 
-INCLUDE_DIRECTORIES(${CMAKE_HOME_DIRECTORY}/orocos/include)
+INCLUDE_DIRECTORIES(
+	${CMAKE_HOME_DIRECTORY}/orocos/include
+	${CMAKE_HOME_DIRECTORY}/common/include
+)
 LINK_DIRECTORIES(${LIBRARY_OUTPUT_PATH})
 
 
-orocos_component(arm_bridge_ros_orocos orocos/src/arm_bridge_ros_orocos.cpp ${COMMON_INCLUDE_DIR})
+orocos_component(arm_bridge_ros_orocos orocos/src/arm_bridge_ros_orocos.cpp common/src/JointTrajectoryController.cpp ${COMMON_INCLUDE_DIR})
 
 orocos_generate_package()
 

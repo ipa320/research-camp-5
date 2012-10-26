@@ -1,0 +1,38 @@
+== Visualization ==
+rosrun rviz rviz
+roslaunch YouBot_deployment youbot_description.launch
+# Note, you will need the youbot_description package from youbot-ros-pkg (https://github.com/youbot/youbot-ros-pkg.git)
+
+== Running ==
+roscd YouBot_deployment/rtt_deploy
+./run.sh ./BRSU/BRSU.ops
+# Note, with or without the hokuyo doesn't matter, you don't need to change anything in the script. By the way, the hokuyo can even be started after this script.
+# Please consult the "Cartesian controller test / demo" section below for instructions on usage.
+
+== Hokuyo laser scanner range finder ==
+roslaunch YouBot_deployment minimalistic.launch
+# Starts hokuyo node & amcl (from youbot_navigation_common and youbot_navigation_global respectively)
+
+== Cartesian controller test / demo ==
+./run.sh BRSU/BRSU.ops
+cd executive
+gravityCompensation
+execute
+var float64[] sample = float64[](16, 0.0)
+getHtip0(sample)
+# move the arm a little bit
+cartesianControl
+var float64[] cc = float64[](9, 0.0)
+cc[0] = 200
+cc[1] = 200
+cc[2] = 200
+cc[3] = 10
+cc[4] = 10
+cc[5] = 10
+cc[6] = 0
+cc[7] = 0
+cc[8] = 0
+setCartesianStiffness(cc)
+setHvp0(sample)
+execute 
+

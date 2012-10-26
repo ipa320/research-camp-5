@@ -18,8 +18,8 @@ runScript( rospack.find("YouBot_deployment") + "/rtt_deploy/generic/driver.ops")
 print.ln("Starting BRSU/controller.ops")
 runScript( rospack.find("YouBot_deployment") + "/rtt_deploy/BRSU/controller.ops")
 
-print.ln("Starting generic/diagnostics.ops")
-runScript( rospack.find("YouBot_deployment") + "/rtt_deploy/BRSU/diagnostics.ops")
+#print.ln("Starting generic/diagnostics.ops")
+#runScript( rospack.find("YouBot_deployment") + "/rtt_deploy/BRSU/diagnostics.ops")
 
 print.ln("Starting BRSU/executive.ops")
 runScript( rospack.find("YouBot_deployment") + "/rtt_deploy/BRSU/executive.ops")
@@ -27,8 +27,15 @@ runScript( rospack.find("YouBot_deployment") + "/rtt_deploy/BRSU/executive.ops")
 print.ln("Starting raw_arm_bridge_ros_orocos/orocos/deploy/arm_bridge.ops")
 runScript( rospack.find("raw_arm_bridge_ros_orocos") + "/orocos/deploy/arm_bridge.ops")
 
-#print.ln("Starting republishing to rviz")
+print.ln("Starting republishing to rviz")
 #runScript( rospack.find("YouBot_deployment") + "/rtt_deploy/generic/configuration_publisher.ops")
+runScript( rospack.find("YouBot_deployment") + "/rtt_deploy/generic/youbot_state_republisher.ops")
+
+#print.ln("Starting joystick_to_geometry_Twist/slave.ops")
+#runScript( rospack.find("joystick_to_geometry_Twist") + "/slave.ops")
+
+#print.ln("Starting YouBot_deployment/rtt_deploy/BRSU/laser.ops");
+#runScript( rospack.find("YouBot_deployment") + "/rtt_deploy/BRSU/laser.ops")
 
 print.ln("Starting control loop");
 controlloop_scheduler.configure;
@@ -48,8 +55,8 @@ driver.Base.clearControllerTimeouts;
 
 #executive.sleep(3);
 
-#print.ln("Coupling haptic slave connections");
-#runScript( rospack.find("YouBot_deployment") + "/rtt_deploy/haptic_slave/haptic_slave_connections.ops")
+print.ln("Coupling haptic slave connections");
+runScript( rospack.find("YouBot_deployment") + "/rtt_deploy/BRSU/haptic_slave_connections.ops")
 
 #executive.sleep(1);
 
@@ -66,15 +73,7 @@ driver.Base.clearControllerTimeouts;
 #executive.fullControlMode;
 #executive.sleep(1);
 
-var float64[] setp
-setp = float64[](5, 0.0)
 executive.jointspaceControl
 executive.useArmOnly
-
-ArmPoseController.JointSpaceController.PD_Joint1.kp[0] = 30
-ArmPoseController.JointSpaceController.PD_Joint2.kp[0] = 30
-ArmPoseController.JointSpaceController.PD_Joint3.kp[0] = 30
-ArmPoseController.JointSpaceController.PD_Joint4.kp[0] = 30
-ArmPoseController.JointSpaceController.PD_Joint5.kp[0] = 30
-
+executive.unfoldArmPosition
 executive.execute

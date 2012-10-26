@@ -38,7 +38,7 @@ to install the basic ROS environment (make sure that you installed the ros-elect
   
 Additionally to the ''ros-electric-desktop-full'' package, some few other packages are required to make the Fetch & Carry scenario compilable and executable. Therefore install the following packages:
 
-     sudo apt-get install ros-electric-desktop-full ros-electric-arm-navigation ros-electric-pr2-controllers ros-electric-object-manipulation ros-electric-pr2-kinematics ros-electric-joystick-drivers ros-electric-laser-drivers ros-electric-cob-common  ros-electric-pr2-simulator ros-electric-openni-kinect ros-electric-pr2-apps python-pygraphviz sudo apt-get install libmysqlclient-dev python-scipy libcap-dev bzr yaml-cpp
+     sudo apt-get install ros-electric-desktop-full ros-electric-arm-navigation ros-electric-pr2-controllers ros-electric-object-manipulation ros-electric-pr2-kinematics ros-electric-joystick-drivers ros-electric-laser-drivers ros-electric-cob-common  ros-electric-pr2-simulator ros-electric-openni-kinect ros-electric-pr2-apps ros-electric-bosch-drivers python-pygraphviz libmysqlclient-dev python-scipy libcap-dev bzr yaml-cpp0.2.6-dev ros-electric-orocos-toolchain ros-electric-rtt-ros-integration ros-electric-rtt-ros-comm ros-electric-rtt-common-msgs ros-electric-rtt-geometry libcap2-bin
 
 ### ROS Tutorials
 If you have never worked with ROS before, we recommend to go through the beginner tutorials provided by ROS:
@@ -64,13 +64,16 @@ BROCRE eases the installation of the required youBot packages. The BROCRE GUI ca
 
 To install a specific package you need to select the respective package and click the "Install" button. For the Fetch & Carry scenario you need to install the following packages:
 
-     research-camp-5
      youbot_driver
      b-it-bots_youbot-ros-pkg
-     b-it-bots_youbot-manipulation
-     
 
+     
 After the installation, the installed packages should be highlighted in green.
+
+Checkout the youbot-manipulation and research-camp-5 repository
+
+     git clone git://github.com/b-it-bots/youbot-manipulation.git
+     git clone git://github.com/b-it-bots/research-camp-5.git
 
 ### Compile Packages
 Once the ROS package path is extended with our new directory, 
@@ -100,25 +103,6 @@ The ROBOT_ENV variable can be used to switch between different environments. So 
 
      echo "export ROBOT_ENV=rc5" >> ~/.bashrc
      source ~/.bashrc
-
-
-
-## Start the Robot
-### In Simulation
-Now the robot can be started with the following command (with Gazebo GUI):
-
-     roslaunch raw_bringup_sim robot.launch
-
-Gazebo can also be started headless:
-
-     roslaunch raw_bringup_sim robot_no_x.launch
-
-### Real Robot
-The real robot can be launched with:
-
-     roslaunch raw_bringup robot.launch
-
-All three commands start only the robot and the simulated hardware components. No other components, like navigation, perception or manipulation will be started. If you want to start the robot with all necessary components required for the Fetch&Carray scenario, please proceed to the next section
 
 
 
