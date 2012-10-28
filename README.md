@@ -67,26 +67,20 @@ To install a specific package you need to select the respective package and clic
      youbot_driver
      b-it-bots_youbot-ros-pkg
      brics_3d_experimental
+     b-it-bots_youbot-manipulation
 
      
 After the installation, the installed packages should be highlighted in green.
 
-Checkout the youbot-manipulation and research-camp-5 repository
+Checkout the research-camp-5 repository
 
-     git clone git://github.com/b-it-bots/youbot-manipulation.git
      git clone git://github.com/b-it-bots/research-camp-5.git
 
-Checkout the BRICS_3D modules:
-
-     git clone https://github.com/blumenthal/brics_3d_experimental.git
-     svn co https://svn.best-of-robotics.org/brics/BROCRE/BRICS_3D/trunk brics_3d
-
-The promted user is "svnuser" and the password is "svnuser"
 	
 ### Compile Packages
 Once the ROS package path is extended with our new directory, 
 
-    echo "export ROS_PACKAGE_PATH=~/brics_software:\$ROS_PACKAGE_PATH" >> ~/.bashrc
+    echo "export ROS_PACKAGE_PATH=~/research-camp-5:\$ROS_PACKAGE_PATH" >> ~/.bashrc
     source ~/.bashrc
 
 the Fetch&Carry can be compiled with:
