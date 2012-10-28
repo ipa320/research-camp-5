@@ -1,0 +1,4 @@
+buttons: [[home,move,home],
+  [middle,move,middle],
+  [cob_recharche,move,cob_recharche],
+  [table_big,move,table_big]]
