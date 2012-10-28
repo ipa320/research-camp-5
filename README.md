@@ -66,6 +66,7 @@ To install a specific package you need to select the respective package and clic
 
      youbot_driver
      b-it-bots_youbot-ros-pkg
+     brics_3d_experimental
 
      
 After the installation, the installed packages should be highlighted in green.
