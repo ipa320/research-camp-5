@@ -1,5 +1,0 @@
-#[x,y,theta]
-home: [0, 0, 0]
-middle: [1, -2, 0.78]
-table_big: [-0.2, -1.2, 0]
-cob_recharge: [-0.5, -2.5, 0]
