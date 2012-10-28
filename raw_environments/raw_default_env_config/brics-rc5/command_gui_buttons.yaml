@@ -1,0 +1,4 @@
+buttons: [[home,move,home],
+  [middle,move,middle],
+  [cob_recharge,move,cob_recharge],
+  [table_big,move,table_big]]
