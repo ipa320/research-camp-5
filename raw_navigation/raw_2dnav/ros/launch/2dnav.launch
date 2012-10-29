@@ -2,7 +2,6 @@
 <launch>
     <!-- navigation goals -->
 	<include file="$(find raw_default_env_config)/upload_param.launch" />
-    <rosparam command="load" ns="/script_server/base_orientations" file="$(find raw_default_env_config)/$(env ROBOT_ENV)/navigation_orientations.yaml"/>
 
 	<arg name="map" default="$(find raw_default_env_config)/$(env ROBOT_ENV)/map.yaml" />
 
