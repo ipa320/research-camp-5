@@ -133,8 +133,8 @@ public:
 
 		BaseScanLinearRegression srv;
 
-		srv.request.filter_minAngle = -M_PI_8;
-		srv.request.filter_maxAngle = M_PI_8;
+		srv.request.filter_minAngle = -M_PI / 8.0;
+		srv.request.filter_maxAngle = M_PI / 8.0;
 		srv.request.filter_minDistance = 0.02;
 		srv.request.filter_maxDistance = 0.80;
 
