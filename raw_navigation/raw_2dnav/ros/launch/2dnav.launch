@@ -3,8 +3,6 @@
     <!-- navigation goals -->
 	<include file="$(find raw_default_env_config)/upload_param.launch" />
     <rosparam command="load" ns="/script_server/base_orientations" file="$(find raw_default_env_config)/$(env ROBOT_ENV)/navigation_orientations.yaml"/>
-    <!-- visualize navigation goals -->
-	<node pkg="raw_tools" type="navigation_goals_as_marker.py" name="raw_navigation_goals_as_marker"/>
 
 	<arg name="map" default="$(find raw_default_env_config)/$(env ROBOT_ENV)/map.yaml" />
 
