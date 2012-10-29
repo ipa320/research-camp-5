@@ -6,7 +6,6 @@
  *
  * Author : Praveen Ramanujam
  *          Ravi Kumar Venkat
-            Nemo Giftsun 
  */
 
 
@@ -74,7 +73,7 @@ void OrientGoal::runBehavior(){
   ros::Publisher vel_pub = n.advertise<geometry_msgs::Twist>("cmd_vel", 10);
 
   tf::Stamped<tf::Pose> global_pose;
-  local_costmap_->getRobotPose(global_pose);
+  global_costmap_->getRobotPose(global_pose);
   double yaw_req = angles::normalize_angle(tf::getYaw(*goal_orientation_));
   double yaw_now = angles::normalize_angle(tf::getYaw(global_pose.getRotation()));
   ROS_INFO("The required orientation is %f but the orientation of the robot is %f\n",yaw_req,yaw_now);
@@ -111,8 +110,8 @@ void OrientGoal::runBehavior(){
       position.y = global_pose.getOrigin().y();
 
       global_costmap_->getOrientedFootprint(position.x, position.y, theta, oriented_footprint);
-     
-      double footprint_cost = world_model_->footprintCost(position, oriented_footprint, local_costmap_->getInscribedRadius(), local_costmap_->getCircumscribedRadius());
+     double footprint_cost = 1.0;
+      //double footprint_cost = world_model_->footprintCost(position, oriented_footprint, local_costmap_->getInscribedRadius(), local_costmap_->getCircumscribedRadius());
       if(footprint_cost < 0.0){
         ROS_WARN("Rotation towards goal cannot take place because there is a potential collision. Cost: %.2f", footprint_cost);
         return;

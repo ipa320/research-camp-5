@@ -15,8 +15,9 @@
 	<include file="$(find raw_2dnav)/ros/launch/sim/amcl_sim.launch" />
 
 	<!-- launch move_base node -->
-	<include file="$(find raw_2dnav)/ros/launch/sim/move_base_sim.launch" />
-
-    <!-- ekf (no effect on real robot, but need for simulation) -->
-	<include file="$(find raw_2dnav)/ros/launch/ekf.launch" />	
+	<include file="$(find raw_2dnav)/ros/dwa/launch/sim/move_base_sim.launch" />
+      
+         <!-- ekf (no effect on real robot, but need for simulation) -->
+	<include file="$(find raw_2dnav)/ros/launch/ekf.launch" />
+	
 </launch>
