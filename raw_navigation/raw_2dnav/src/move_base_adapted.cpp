@@ -36,13 +36,13 @@
  *         Mike Phillips (put the planner in its own thread)
  *         Praveen Ramanujam (orient towards goal, orient towards path,goal feasibility service and recovery behavior)
  *********************************************************************/
-#include <raw_2dnav/basic_navigation.hpp>
+#include <raw_2dnav/move_base_adapted.hpp>
 #include <raw_2dnav/orient_goal.hpp>
 #include <boost/algorithm/string.hpp>
 
 namespace basic_navigation {
 
-BasicNavigation::BasicNavigation(std::string name, tf::TransformListener& tf) :
+MoveBaseAdapted::MoveBaseAdapted(std::string name, tf::TransformListener& tf) :
     		tf_(tf),
     		as_(NULL),
     		tc_(NULL), planner_costmap_ros_(NULL), controller_costmap_ros_(NULL),
@@ -52,7 +52,7 @@ BasicNavigation::BasicNavigation(std::string name, tf::TransformListener& tf) :
     		planner_plan_(NULL), latest_plan_(NULL), controller_plan_(NULL),
     		runPlanner_(false), setup_(false), p_freq_change_(false), c_freq_change_(false), new_global_plan_(false) {
 
-	as_ = new MoveBaseActionServer(ros::NodeHandle(), "move_base", boost::bind(&BasicNavigation::executeCb, this, _1), false);
+	as_ = new MoveBaseActionServer(ros::NodeHandle(), "move_base", boost::bind(&MoveBaseAdapted::executeCb, this, _1), false);
 
 	ros::NodeHandle private_nh("~");
 	ros::NodeHandle nh;
@@ -79,7 +79,7 @@ BasicNavigation::BasicNavigation(std::string name, tf::TransformListener& tf) :
 	controller_plan_ = new std::vector<geometry_msgs::PoseStamped>();
 
 	//set up the planner's thread
-	planner_thread_ = new boost::thread(boost::bind(&BasicNavigation::planThread, this));
+	planner_thread_ = new boost::thread(boost::bind(&MoveBaseAdapted::planThread, this));
 
 	//for comanding the base
 	vel_pub_ = nh.advertise<geometry_msgs::Twist>("cmd_vel", 1);
@@ -92,7 +92,7 @@ BasicNavigation::BasicNavigation(std::string name, tf::TransformListener& tf) :
 	//they won't get any useful information back about its status, but this is useful for tools
 	//like nav_view and rviz
 	ros::NodeHandle simple_nh("move_base_simple");
-	goal_sub_ = simple_nh.subscribe<geometry_msgs::PoseStamped>("goal", 1, boost::bind(&BasicNavigation::goalCB, this, _1));
+	goal_sub_ = simple_nh.subscribe<geometry_msgs::PoseStamped>("goal", 1, boost::bind(&MoveBaseAdapted::goalCB, this, _1));
 
 	//we'll assume the radius of the robot to be consistent with what's specified for the costmaps
 	private_nh.param("local_costmap/inscribed_radius", inscribed_radius_, 0.325);
@@ -169,16 +169,16 @@ BasicNavigation::BasicNavigation(std::string name, tf::TransformListener& tf) :
 	controller_costmap_ros_->start();
 
 	//advertise a service for getting a plan
-	make_plan_srv_ = private_nh.advertiseService("make_plan", &BasicNavigation::planService, this);
+	make_plan_srv_ = private_nh.advertiseService("make_plan", &MoveBaseAdapted::planService, this);
 
 	//advertise a service for checking the feasibility of the goal
 	//goal_feasibility_srv = private_nh.advertiseService("goal_feasibility_check",&BasicNavigation::goalfeasibilityService,this);
 
 	//advertise a service for clearing the costmaps
-	clear_unknown_srv_ = private_nh.advertiseService("clear_unknown_space", &BasicNavigation::clearUnknownService, this);
+	clear_unknown_srv_ = private_nh.advertiseService("clear_unknown_space", &MoveBaseAdapted::clearUnknownService, this);
 
 	//advertise a service for clearing the costmaps
-	clear_costmaps_srv_ = private_nh.advertiseService("clear_costmaps", &BasicNavigation::clearCostmapsService, this);
+	clear_costmaps_srv_ = private_nh.advertiseService("clear_costmaps", &MoveBaseAdapted::clearCostmapsService, this);
 
 	//initially clear any unknown space around the robot
 	planner_costmap_ros_->clearNonLethalWindow(circumscribed_radius_ * 4, circumscribed_radius_ * 4);
@@ -212,7 +212,7 @@ BasicNavigation::BasicNavigation(std::string name, tf::TransformListener& tf) :
 
 }
 
-void BasicNavigation::goalCB(const geometry_msgs::PoseStamped::ConstPtr& goal){
+void MoveBaseAdapted::goalCB(const geometry_msgs::PoseStamped::ConstPtr& goal){
 	ROS_DEBUG_NAMED("move_base","In ROS goal callback, wrapping the PoseStamped in the action message and re-sending to the server.");
 	move_base_msgs::MoveBaseActionGoal action_goal;
 	action_goal.header.stamp = ros::Time::now();
@@ -221,7 +221,7 @@ void BasicNavigation::goalCB(const geometry_msgs::PoseStamped::ConstPtr& goal){
 	action_goal_pub_.publish(action_goal);
 }
 
-void BasicNavigation::clearCostmapWindows(double size_x, double size_y){
+void MoveBaseAdapted::clearCostmapWindows(double size_x, double size_y){
 	tf::Stamped<tf::Pose> global_pose;
 
 	//clear the planner's costmap
@@ -276,14 +276,14 @@ void BasicNavigation::clearCostmapWindows(double size_x, double size_y){
 	controller_costmap_ros_->setConvexPolygonCost(clear_poly, costmap_2d::FREE_SPACE);
 }
 
-bool BasicNavigation::clearUnknownService(std_srvs::Empty::Request &req, std_srvs::Empty::Response &resp){
+bool MoveBaseAdapted::clearUnknownService(std_srvs::Empty::Request &req, std_srvs::Empty::Response &resp){
 	//clear any unknown space around the robot the same as we do on initialization
 	planner_costmap_ros_->clearNonLethalWindow(circumscribed_radius_ * 4, circumscribed_radius_ * 4);
 	controller_costmap_ros_->clearNonLethalWindow(circumscribed_radius_ * 4, circumscribed_radius_ * 4);
 	return true;
 }
 
-bool BasicNavigation::clearCostmapsService(std_srvs::Empty::Request &req, std_srvs::Empty::Response &resp){
+bool MoveBaseAdapted::clearCostmapsService(std_srvs::Empty::Request &req, std_srvs::Empty::Response &resp){
 	//clear the costmaps
 	planner_costmap_ros_->resetMapOutsideWindow(0,0);
 	controller_costmap_ros_->resetMapOutsideWindow(0,0);
@@ -326,7 +326,7 @@ bool BasicNavigation::clearCostmapsService(std_srvs::Empty::Request &req, std_sr
 	resp.feasible = true;
 	return true;
 }*/
-bool BasicNavigation::planService(nav_msgs::GetPlan::Request &req, nav_msgs::GetPlan::Response &resp){
+bool MoveBaseAdapted::planService(nav_msgs::GetPlan::Request &req, nav_msgs::GetPlan::Response &resp){
 	if(as_->isActive()){
 		ROS_ERROR("basic_navigation must be in an inactive state to make a plan for an external user");
 		return false;
@@ -389,7 +389,7 @@ bool BasicNavigation::planService(nav_msgs::GetPlan::Request &req, nav_msgs::Get
 	return true;
 }
 
-BasicNavigation::~BasicNavigation(){
+MoveBaseAdapted::~MoveBaseAdapted(){
 	recovery_behaviors_.clear();
 
 
@@ -417,7 +417,7 @@ BasicNavigation::~BasicNavigation(){
 	delete controller_plan_;
 }
 
-bool BasicNavigation::makePlan(const geometry_msgs::PoseStamped& goal, std::vector<geometry_msgs::PoseStamped>& plan){
+bool MoveBaseAdapted::makePlan(const geometry_msgs::PoseStamped& goal, std::vector<geometry_msgs::PoseStamped>& plan){
 	//make sure to set the plan to be empty initially
 	plan.clear();
 
@@ -442,9 +442,9 @@ bool BasicNavigation::makePlan(const geometry_msgs::PoseStamped& goal, std::vect
 		ROS_DEBUG_NAMED("basic_navigation","Failed to find a  plan to point (%.2f, %.2f)", goal.pose.position.x, goal.pose.position.y);
 		return false;
 	}
-	basic_navigation::OrientGoal og;
-	geometry_msgs::Quaternion local_orientation;
-	ROS_INFO("In order to generate the plan, Now Orienting towards path ..!\n");
+	//basic_navigation::OrientGoal og;
+	//geometry_msgs::Quaternion local_orientation;
+	//ROS_INFO("In order to generate the plan, Now Orienting towards path ..!\n");
 	//If the control is here, it is believed that the plan is of non-zero length and a valid plan exists
 	/*double xpos = plan.at(1).pose.position.x;
 	double ypos = plan.at(1).pose.position.y;
@@ -462,7 +462,7 @@ bool BasicNavigation::makePlan(const geometry_msgs::PoseStamped& goal, std::vect
 	return true;
 }
 
-void BasicNavigation::publishZeroVelocity(){
+void MoveBaseAdapted::publishZeroVelocity(){
 	geometry_msgs::Twist cmd_vel;
 	cmd_vel.linear.x = 0.0;
 	cmd_vel.linear.y = 0.0;
@@ -471,7 +471,7 @@ void BasicNavigation::publishZeroVelocity(){
 
 }
 
-bool BasicNavigation::isQuaternionValid(const geometry_msgs::Quaternion& q){
+bool MoveBaseAdapted::isQuaternionValid(const geometry_msgs::Quaternion& q){
 	//first we need to check if the quaternion has nan's or infs
 	if(!std::isfinite(q.x) || !std::isfinite(q.y) || !std::isfinite(q.z) || !std::isfinite(q.w)){
 		ROS_ERROR("Quaternion has nans or infs... discarding as a navigation goal");
@@ -501,7 +501,7 @@ bool BasicNavigation::isQuaternionValid(const geometry_msgs::Quaternion& q){
 	return true;
 }
 
-geometry_msgs::PoseStamped BasicNavigation::goalToGlobalFrame(const geometry_msgs::PoseStamped& goal_pose_msg){
+geometry_msgs::PoseStamped MoveBaseAdapted::goalToGlobalFrame(const geometry_msgs::PoseStamped& goal_pose_msg){
 	std::string global_frame = planner_costmap_ros_->getGlobalFrameID();
 	tf::Stamped<tf::Pose> goal_pose, global_pose;
 	poseStampedMsgToTF(goal_pose_msg, goal_pose);
@@ -525,7 +525,7 @@ geometry_msgs::PoseStamped BasicNavigation::goalToGlobalFrame(const geometry_msg
 
 }
 
-void BasicNavigation::planThread(){
+void MoveBaseAdapted::planThread(){
 	ROS_DEBUG_NAMED("move_base_plan_thread","Starting planner thread...");
 	ros::NodeHandle n;
 	ros::Rate r(planner_frequency_);
@@ -594,7 +594,7 @@ void BasicNavigation::planThread(){
 	}
 }
 
-void BasicNavigation::executeCb(const move_base_msgs::MoveBaseGoalConstPtr& move_base_goal)
+void MoveBaseAdapted::executeCb(const move_base_msgs::MoveBaseGoalConstPtr& move_base_goal)
 {
 	if(!isQuaternionValid(move_base_goal->target_pose.pose.orientation)){
 		as_->setAborted(move_base_msgs::MoveBaseResult(), "Aborting on goal because it was sent with an invalid quaternion");
@@ -713,12 +713,6 @@ void BasicNavigation::executeCb(const move_base_msgs::MoveBaseGoalConstPtr& move
 
 		//if we're done, then we'll return from execute
 		if(done){
-			basic_navigation::OrientGoal orientgoal;
-			geometry_msgs::Quaternion goal_orientation;
-			goal_orientation = goal.pose.orientation;
-			orientgoal.initialize("rotate_recovery",&tf_, planner_costmap_ros_, controller_costmap_ros_,&goal_orientation);
-			orientgoal.runBehavior();
-            publishZeroVelocity();
 			return;
 		}
 
@@ -744,13 +738,13 @@ void BasicNavigation::executeCb(const move_base_msgs::MoveBaseGoalConstPtr& move
 	return;
 }
 
-double BasicNavigation::distance(const geometry_msgs::PoseStamped& p1, const geometry_msgs::PoseStamped& p2)
+double MoveBaseAdapted::distance(const geometry_msgs::PoseStamped& p1, const geometry_msgs::PoseStamped& p2)
 {
 	return sqrt((p1.pose.position.x - p2.pose.position.x) * (p1.pose.position.x - p2.pose.position.x)
 			+ (p1.pose.position.y - p2.pose.position.y) * (p1.pose.position.y - p2.pose.position.y));
 }
 
-bool BasicNavigation::executeCycle(geometry_msgs::PoseStamped& goal, std::vector<geometry_msgs::PoseStamped>& global_plan){
+bool MoveBaseAdapted::executeCycle(geometry_msgs::PoseStamped& goal, std::vector<geometry_msgs::PoseStamped>& global_plan){
 	boost::recursive_mutex::scoped_lock ecl(configuration_mutex_);
 	//we need to be able to publish velocity commands
 	geometry_msgs::Twist cmd_vel;
@@ -844,6 +838,13 @@ bool BasicNavigation::executeCycle(geometry_msgs::PoseStamped& goal, std::vector
 			boost::unique_lock<boost::mutex> lock(planner_mutex_);
 			runPlanner_ = false;
 			lock.unlock();
+
+			basic_navigation::OrientGoal orientgoal;
+			geometry_msgs::Quaternion goal_orientation;
+			goal_orientation = goal.pose.orientation;
+			orientgoal.initialize("rotate_recovery",&tf_, planner_costmap_ros_, controller_costmap_ros_,&goal_orientation);
+			orientgoal.runBehavior();
+			publishZeroVelocity();
 
 			as_->setSucceeded(move_base_msgs::MoveBaseResult(), "Goal reached.");
 			return true;
@@ -951,7 +952,7 @@ bool BasicNavigation::executeCycle(geometry_msgs::PoseStamped& goal, std::vector
 	return false;
 }
 
-bool BasicNavigation::loadRecoveryBehaviors(ros::NodeHandle node){
+bool MoveBaseAdapted::loadRecoveryBehaviors(ros::NodeHandle node){
 	XmlRpc::XmlRpcValue behavior_list;
 	if(node.getParam("recovery_behaviors", behavior_list)){
 		if(behavior_list.getType() == XmlRpc::XmlRpcValue::TypeArray){
@@ -1036,7 +1037,7 @@ bool BasicNavigation::loadRecoveryBehaviors(ros::NodeHandle node){
 }
 
 //we'll load our default recovery behaviors here
-void BasicNavigation::loadDefaultRecoveryBehaviors(){
+void MoveBaseAdapted::loadDefaultRecoveryBehaviors(){
 	recovery_behaviors_.clear();
 	try{
 		//we need to set some parameters based on what's been passed in to us to maintain backwards compatibility
@@ -1072,7 +1073,7 @@ void BasicNavigation::loadDefaultRecoveryBehaviors(){
 	return;
 }
 
-void BasicNavigation::resetState(){
+void MoveBaseAdapted::resetState(){
 	state_ = PLANNING;
 	recovery_index_ = 0;
 	recovery_trigger_ = PLANNING_R;
@@ -1092,7 +1093,7 @@ int main(int argc, char** argv){
 	ros::init(argc, argv, "move_base_node");
 	tf::TransformListener tf(ros::Duration(10));
 
-	basic_navigation::BasicNavigation basic_navigation("basic_navigation", tf);
+	basic_navigation::MoveBaseAdapted basic_navigation("basic_navigation", tf);
 
 	//ros::MultiThreadedSpinner s;
 	ros::spin();

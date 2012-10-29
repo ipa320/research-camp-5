@@ -4,8 +4,8 @@
 #include <iostream>
 
 #include <raw_base_placement/BaseScanLinearRegression.h>
-#include "placement_wrt_platform/LaserScanLinearRegression.h"
-#include "placement_wrt_platform/LaserScanLinearRegressionUtil.h"
+#include "placement_wrt_workspace/LaserScanLinearRegression.h"
+#include "placement_wrt_workspace/LaserScanLinearRegressionUtil.h"
 
 
 using namespace raw_base_placement;
@@ -83,7 +83,7 @@ public:
 
 int main(int argc, char** argv)
 {
-  ros::init(argc, argv, "LaserScanLinearRegressionService_node");
+  ros::init(argc, argv, "raw_base_placement_wrt_workspace_ss");
   ros::NodeHandle n;
 
   std::string topic = "/scan_front";

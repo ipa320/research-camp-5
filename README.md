@@ -38,7 +38,7 @@ to install the basic ROS environment (make sure that you installed the ros-elect
   
 Additionally to the ''ros-electric-desktop-full'' package, some few other packages are required to make the Fetch & Carry scenario compilable and executable. Therefore install the following packages:
 
-     sudo apt-get install ros-electric-desktop-full ros-electric-arm-navigation ros-electric-pr2-controllers ros-electric-object-manipulation ros-electric-pr2-kinematics ros-electric-joystick-drivers ros-electric-laser-drivers ros-electric-cob-common  ros-electric-pr2-simulator ros-electric-openni-kinect ros-electric-pr2-apps ros-electric-bosch-drivers python-pygraphviz libmysqlclient-dev python-scipy libcap-dev bzr yaml-cpp0.2.6-dev ros-electric-orocos-toolchain ros-electric-rtt-ros-integration ros-electric-rtt-ros-comm ros-electric-rtt-common-msgs ros-electric-rtt-geometry libcap2-bin
+     sudo apt-get install ros-electric-desktop-full ros-electric-arm-navigation ros-electric-pr2-controllers ros-electric-object-manipulation ros-electric-pr2-kinematics ros-electric-joystick-drivers ros-electric-laser-drivers ros-electric-cob-common  ros-electric-pr2-simulator ros-electric-openni-kinect ros-electric-pr2-apps ros-electric-bosch-drivers python-pygraphviz libmysqlclient-dev python-scipy libcap-dev bzr yaml-cpp0.2.6-dev ros-electric-orocos-toolchain ros-electric-rtt-ros-integration ros-electric-rtt-ros-comm ros-electric-rtt-common-msgs ros-electric-rtt-geometry libcap2-bin python-scipy
 
 ### ROS Tutorials
 If you have never worked with ROS before, we recommend to go through the beginner tutorials provided by ROS:
@@ -66,26 +66,21 @@ To install a specific package you need to select the respective package and clic
 
      youbot_driver
      b-it-bots_youbot-ros-pkg
+     brics_3d_experimental
+     b-it-bots_youbot-manipulation
 
      
 After the installation, the installed packages should be highlighted in green.
 
-Checkout the youbot-manipulation and research-camp-5 repository
+Checkout the research-camp-5 repository
 
-     git clone git://github.com/b-it-bots/youbot-manipulation.git
      git clone git://github.com/b-it-bots/research-camp-5.git
 
-Checkout the BRICS_3D modules:
-
-     git clone https://github.com/blumenthal/brics_3d_experimental.git
-     svn co https://svn.best-of-robotics.org/brics/BROCRE/BRICS_3D/trunk brics_3d
-
-The promted user is "svnuser" and the password is "svnuser"
 	
 ### Compile Packages
 Once the ROS package path is extended with our new directory, 
 
-    echo "export ROS_PACKAGE_PATH=~/brics_software:\$ROS_PACKAGE_PATH" >> ~/.bashrc
+    echo "export ROS_PACKAGE_PATH=~/research-camp-5:\$ROS_PACKAGE_PATH" >> ~/.bashrc
     source ~/.bashrc
 
 the Fetch&Carry can be compiled with:
