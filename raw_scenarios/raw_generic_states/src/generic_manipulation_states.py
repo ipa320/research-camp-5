@@ -20,12 +20,7 @@ class grasp_random_object(smach.State):
         sss.move("arm", "zeroposition")
         
         for object in userdata.object_list:         
-            
-            # ToDo: need to be adjusted to correct stuff           
-            #if object.pose.pose.position.z <= 0.0 or object.pose.pose.position.z >= 0.10:
-            if object.transform.transform.translation.z <= 0.0 or object.transform.transform.translation.z >= 0.10:
-                continue
-    
+                
             sss.move("arm", "zeroposition")                             
 
             ##object.pose.pose.position.z = object.pose.pose.position.z + 0.02
@@ -33,8 +28,8 @@ class grasp_random_object(smach.State):
             #object.pose.pose.position.y = object.pose.pose.position.y - 0.005
 
             #object.transform.transform.translation.z = object.transform.transform.translation.z + 0.02
-            object.transform.transform.translation.x = object.transform.transform.translation.x + 0.01
-            object.transform.transform.translation.y = object.transform.transform.translation.y - 0.005
+            #object.transform.transform.translation.x = object.transform.transform.translation.x + 0.01
+            #object.transform.transform.translation.y = object.transform.transform.translation.y - 0.005
 
             #handle_arm = sss.move("arm", [object.pose.pose.position.x, object.pose.pose.position.y, object.pose.pose.position.z, "/base_link"])
             handle_arm = sss.move("arm", [object.transform.transform.translation.x, object.transform.transform.translation.y, object.transform.transform.translation.z, "/base_link"])
