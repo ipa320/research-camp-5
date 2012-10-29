@@ -1,0 +1,47 @@
+<?xml version="1.0"?>
+<launch>
+   
+	<!-- general arm components fir inverse kinematic -->
+    <include file="$(find youbot_arm_navigation)/ros/launch/planning_environment.launch" />
+    <!-- IMPORTANT: this line MUST always be launched AFTER the planning environment -->
+    <rosparam command="load" ns="robot_description_planning" file="$(find raw_arm_navigation)/ros/config/collision_checks.yaml" />
+    
+
+	<include file="$(find youbot_arm_navigation)/ros/launch/environment_server.launch">
+		<arg name="use_monitor" value="true" />
+		<arg name="use_collision_map" value="false" />
+	</include>
+
+	<include file="$(find youbot_arm_navigation)/ros/launch/constraint_aware_kinematics.launch" >
+        <arg name="use_monitor" value="true" />
+		<arg name="use_collision_map" value="false" />
+	</include>
+
+	<include file="$(find raw_arm_navigation)/ros/launch/arm_action_server.launch" />
+	<include file="$(find raw_arm_navigation)/ros/launch/gripper_action_server.launch" />
+
+
+	<!-- general arm components for planned arm movement -->
+	<include file="$(find youbot_joint_trajectory_action)/ros/launch/youbot_joint_trajectory_action.launch" />
+	<include file="$(find youbot_arm_navigation)/ros/launch/trajectory_filter.launch" />
+	<include file="$(find youbot_arm_navigation)/ros/launch/move_arm.launch" />
+	<include file="$(find youbot_arm_navigation)/ros/launch/interpolated_ik_motion_planning.launch" />
+	<include file="$(find youbot_arm_navigation)/ros/launch/collision_proximity.launch" />
+	
+	<!-- PLANNER -->
+	<!-- ompl -->
+	<include file="$(find youbot_arm_navigation)/ros/launch/ompl_planning.launch" />
+	
+	<!-- chomp 
+	<include file="$(find youbot_arm_navigation)/ros/launch/chomp_planning.launch" />
+	-->
+	
+	<!-- collision_proximity  
+	<include file="$(find youbot_arm_navigation)/ros/launch/collision_proximity_planning.launch" />
+	-->
+	
+	<!-- Kinect perception
+	<include file="$(find youbot_arm_navigation)/ros/launch/kinect_perception.launch" />
+	-->
+
+</launch>
