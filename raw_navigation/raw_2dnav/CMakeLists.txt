@@ -19,14 +19,14 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 #uncomment if you have defined messages
 #rosbuild_genmsg()
 #uncomment if you have defined services
-#rosbuild_gensrv()
+rosbuild_gensrv()
 
 #common commands for building c++ executables and libraries
 rosbuild_add_library(${PROJECT_NAME} src/orient_goal.cpp)
 #target_link_libraries(${PROJECT_NAME} another_library)
 #rosbuild_add_boost_directories()
-rosbuild_add_executable(basic_navigation src/basic_navigation.cpp src/orient_goal.cpp)
+rosbuild_add_executable(move_base_adapted src/move_base_adapted.cpp src/orient_goal.cpp)
 #rosbuild_link_boost(${PROJECT_NAME} thread)
-rosbuild_link_boost(basic_navigation system)
+rosbuild_link_boost(move_base_adapted system)
 #rosbuild_add_executable(example examples/example.cpp)
 #target_link_libraries(example ${PROJECT_NAME})

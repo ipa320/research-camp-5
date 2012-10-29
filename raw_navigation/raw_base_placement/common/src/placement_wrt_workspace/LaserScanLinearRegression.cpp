@@ -1,7 +1,7 @@
 #include <vector>
 #include <math.h>
 
-#include "placement_wrt_platform/LaserScanLinearRegression.h"
+#include "placement_wrt_workspace/LaserScanLinearRegression.h"
 #include <iostream>
 
 namespace LaserScanLinearRegression {

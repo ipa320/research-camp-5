@@ -7,7 +7,7 @@
     <include file="$(find raw_2dnav)/ros/launch/sim/2dnav_sim.launch" />	
 
     <!-- behavior -->
-    <include file="$(find raw_base_placement)/ros/launch/placement_wrt_platform.launch" />
+    <include file="$(find raw_base_placement)/ros/launch/placement_wrt_workspace.launch" />
 
     <!-- manipulation -->
     <include file="$(find raw_arm_navigation)/ros/launch/simple_manipulation.launch" />	

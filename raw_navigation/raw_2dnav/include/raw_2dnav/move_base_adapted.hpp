@@ -80,19 +80,19 @@ namespace basic_navigation {
    * @class BasicNavigation
    * @brief A class that uses the actionlib::ActionServer interface that moves the robot base to a goal location.
    */
-  class BasicNavigation {
+  class MoveBaseAdapted {
     public:
       /**
        * @brief  Constructor for the actions
        * @param name The name of the action
        * @param tf A reference to a TransformListener
        */
-      BasicNavigation(std::string name, tf::TransformListener& tf);
+      MoveBaseAdapted(std::string name, tf::TransformListener& tf);
 
       /**
        * @brief  Destructor - Cleans up
        */
-      virtual ~BasicNavigation();
+      virtual ~MoveBaseAdapted();
 
       /**
        * @brief  Performs a control cycle

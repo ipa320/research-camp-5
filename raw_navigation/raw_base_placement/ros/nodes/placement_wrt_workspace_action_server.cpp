@@ -5,7 +5,7 @@
 #include <sensor_msgs/LaserScan.h>
 #include <geometry_msgs/Twist.h>
 
-#include "placement_wrt_platform/LaserScanLinearRegression.h"
+#include "placement_wrt_workspace/LaserScanLinearRegression.h"
 #include <raw_base_placement/OrientToBaseAction.h>
 #include <raw_base_placement/BaseScanLinearRegression.h>
 #include <iostream>
@@ -133,8 +133,8 @@ public:
 
 		BaseScanLinearRegression srv;
 
-		srv.request.filter_minAngle = -M_PI_4;
-		srv.request.filter_maxAngle = M_PI_4;
+		srv.request.filter_minAngle = -M_PI / 8.0;
+		srv.request.filter_maxAngle = M_PI / 8.0;
 		srv.request.filter_minDistance = 0.02;
 		srv.request.filter_maxDistance = 0.80;
 
@@ -195,13 +195,13 @@ public:
 
 int main(int argc, char** argv)
 {
-  ros::init(argc, argv, "OrientToLaserReading");
+  ros::init(argc, argv, "raw_base_placement_wrt_workspace_as");
   ros::NodeHandle n;
 
   std::string cmd_vel_name = "/cmd_vel";
   std::string service_name = "scan_front_linearregression";
 
-  OrientToLaserReadingAction orientAction(n, "/raw_base_placement/scan_front_orientation", cmd_vel_name, service_name);
+  OrientToLaserReadingAction orientAction(n, "/raw_base_placement/adjust_to_workspace", cmd_vel_name, service_name);
 
   ROS_INFO("Action Service is ready");
 
