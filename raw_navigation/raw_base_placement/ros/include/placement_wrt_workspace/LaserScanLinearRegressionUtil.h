@@ -11,7 +11,7 @@
 #include <vector>
 
 #include <sensor_msgs/LaserScan.h>
-#include "placement_wrt_platform/LaserScanLinearRegression.h"
+#include "placement_wrt_workspace/LaserScanLinearRegression.h"
 
 class LaserScanLinearRegressionUtil {
 public:

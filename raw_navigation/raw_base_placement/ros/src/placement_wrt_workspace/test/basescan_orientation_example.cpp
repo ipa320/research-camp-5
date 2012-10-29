@@ -7,7 +7,7 @@ int main (int argc, char **argv)
 {
   ros::init(argc, argv, "BaseOrientation_Test");
 
-  actionlib::SimpleActionClient<raw_base_placement::OrientToBaseAction> ac("/scan_front_orientation", true);
+  actionlib::SimpleActionClient<raw_base_placement::OrientToBaseAction> ac("/raw_base_placement/adjust_to_workspace", true);
 
   ROS_INFO("Waiting for action server to start.");
   // wait for the action server to start
