@@ -38,6 +38,7 @@ public:
 		double downsampling_distance;
 		int min_points_per_objects;
 		double spherical_distance;
+		std::string point_cloud_in;
 
 };
 
@@ -97,132 +98,10 @@ public:
 		/* protected region user update end */
     }
 
-	bool callback_get_scene_objects(brics_3d_msgs::GetSceneObjects::Request  &req, brics_3d_msgs::GetSceneObjects::Response &res , object_segmentation_config config)
+	bool callback_get_scene_objects(brics_3d_msgs::GetSceneObjects::Request  &req, brics_3d_msgs::GetSceneObjects::Response &res )
 	{
-		/* protected region user implementation of service callback for get_scene_objects on begin */
-		//this->config = config; //update config (dynamic reconfigure)
-
-		sensor_msgs::PointCloud2::ConstPtr const_input_cloud;
-		sensor_msgs::PointCloud2 input_cloud;
-		pcl::PointCloud<pcl::PointXYZRGB> point_cloud;
-
-		vector<brics_3d::rsg::Attribute> attributes;
-		brics_3d::rsg::TimeStamp currentTime;
-		ros::Time time = ros::Time::now();
-		brics_3d::rsg::SceneGraphTypeCasts::convertRosMsgToTimeStamp(time, currentTime);
-
-		clearScene(wm, sceneObjectsGroupId);
-
-		do
-		{
-			const_input_cloud = ros::topic::waitForMessage<sensor_msgs::PointCloud2>("/camera/rgb/points", ros::Duration(5));
-			ROS_INFO("received point cloud data. Doing preprocessing now ...");
-			input_cloud = *const_input_cloud;
-
-		}while(!PreparePointCloud(input_cloud, point_cloud));
-
-		try {
-			// start with an empty set of segmented objects
-			last_segmented_objects.objects.clear();
-
-
-			// point cloud colors to color image
-			IplImage *image = ClusterToImage(input_cloud);
-
-			// find planes and objects
-			pcl::PointCloud<pcl::PointXYZRGBNormal> planar_point_cloud;
-			std::vector<structPlanarSurface> hierarchy_planes;
-
-			ROS_INFO("extract object candidates");
-			object_candidate_extractor->extractObjectCandidates(point_cloud, planar_point_cloud, hierarchy_planes);
-
-			// extract the clustered planes and objects
-			std::vector<pcl::PointCloud<pcl::PointXYZRGBNormal> > clustered_objects;
-			std::vector<pcl::PointCloud<pcl::PointXYZRGBNormal> > clustered_planes;
-			std::vector<sensor_msgs::PointCloud2> clustered_objects_msgs;
-			std::vector<geometry_msgs::PoseStamped> centroids_msgs;
-			std::vector<raw_msgs::Object> segmented_objects;
-
-			unsigned int object_count = 0;
-			for (unsigned int i = 0; i < hierarchy_planes.size(); i++) {
-				structPlanarSurface plane = hierarchy_planes[i];
-
-				// save for visualization
-				clustered_planes.push_back(plane.pointCloud);
-
-				// process all objects on the plane
-				for (unsigned int j = 0; j < plane.clusteredObjects.size(); j++) {
-					pcl::PointCloud<pcl::PointXYZRGBNormal> object = plane.clusteredObjects[j];
-
-					// convert to ROS point cloud for further processing
-					sensor_msgs::PointCloud2 cloud;
-					pcl::toROSMsg(object, cloud);
-					clustered_objects_msgs.push_back(cloud);
-
-					raw_msgs::Object segmented_object;
-
-					// find the image corresponding to the cluster
-					if(config.extract_obj_in_rgb_img)
-					{
-						sensor_msgs::ImagePtr img = ExtractRegionOfInterest(cloud, image);
-						segmented_object.rgb_image = *img;
-						segmented_object.rgb_image.header = input_cloud.header;
-					}
-
-					// find the centroid
-					geometry_msgs::PoseStamped centroid = ExtractCentroid(object);
-					centroids_msgs.push_back(centroid);
-
-					// save all information about the object for publication
-					segmented_object.cluster = cloud;
-					segmented_object.pose = centroid;
-					segmented_objects.push_back(segmented_object);
-
-					// add found object to scene graph
-					unsigned int sceneObjectTransformId;
-					brics_3d::HomogeneousMatrix44::IHomogeneousMatrix44Ptr objectPose(new brics_3d::HomogeneousMatrix44());
-					brics_3d::rsg::SceneGraphTypeCasts::convertPoseMsgToHomogeniousMatrix(centroid, objectPose);
-					attributes.clear();
-					attributes.push_back(sceneObjectsTag);
-					wm->scene.addTransformNode(this->sceneObjectsGroupId, sceneObjectTransformId, attributes, objectPose, currentTime);
-
-					// save for visualization
-					clustered_objects.push_back(object);
-					++object_count;
-				}
-			}
-
-			ROS_INFO("found %d objects on %d planes", object_count, hierarchy_planes.size());
-
-
-			// remember the result of the segmentation for the service
-			last_segmented_objects.stamp = ros::Time::now();
-			last_segmented_objects.objects = segmented_objects;
-
-
-			// publish the segmented objects
-			raw_msgs::ObjectList object_list;
-			object_list.objects = segmented_objects;
-
-
-			// publish the point clouds for visualization
-			PublishPointClouds(clustered_objects, data.out_object_points);
-			PublishPointClouds(clustered_planes, data.out_plane_points);
-		} catch (tf::TransformException &ex) {
-			ROS_WARN("No tf available: %s", ex.what());
-		}
-
-
-
-		vector<brics_3d::SceneObject> foundSceneObjects;
-		brics_3d::rsg::SceneGraphTypeCasts::convertRosMsgToAttributes(req.attributes, attributes);
-		attributes.push_back(sceneObjectsTag);
-		wm->getSceneObjects(attributes, foundSceneObjects);
-		ROS_INFO("Found %d scene objects", foundSceneObjects.size());
-		std::string to_frame = "/base_link";
-		brics_3d::rsg::SceneGraphTypeCasts::convertSceneObjectsToRosMsg(foundSceneObjects, res.results, to_frame);
-
-		/* protected region user implementation of service callback for get_scene_objects end */
+		/* protected region user implementation of service callback on begin */
+		/* protected region user implementation of service callback end */
 		return true;
 	}
     
