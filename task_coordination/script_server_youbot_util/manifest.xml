@@ -12,7 +12,7 @@
   <depend package="actionlib"/>
   <depend package="actionlib_msgs"/>
   <depend package="smach"/>
-  <depend package="script_server_core"/>
+  <depend package="action_cmdr"/>
   <depend package="tf"/>
   <depend package="raw_arm_navigation" />
   <depend package="geometry_msgs" />

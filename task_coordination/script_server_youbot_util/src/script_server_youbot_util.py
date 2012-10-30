@@ -7,7 +7,7 @@
 # Copyright (c) 2012 Tim Niemueller [www.niemueller.de]
 #################################################################
 
-from script_server_core.base_action import BaseAction
+from action_cmdr.base_action import BaseAction
 
 import roslib
 roslib.load_manifest('script_server_youbot_util')
@@ -15,6 +15,20 @@ import rospy
 import actionlib
 import tf
 
+class PrintAction(BaseAction):
+    action_name = "printit"
+
+    def execute(self, what_to_print):
+        print("YES! %s" % what_to_print)
+
+class TestAction(BaseAction):
+    action_name = "test"
+
+    def __init__(self, actions):
+        self.actions = actions
+
+    def execute(self, what_to_print):
+        self.actions.printit(what_to_print)
 
 #------------------- Move section -------------------#
 ## Deals with all kind of movements for different components.
@@ -25,21 +39,21 @@ import tf
 class YouBotMoveAction(BaseAction):
     action_name = "move"
 
-    def __init__(self):
-        pass
+    def __init__(self, actions):
+        self.actions = actions
 
     # \param component_name Name of the component.
     # \param parameter_name Name of the parameter on the ROS parameter server.
     # \param blocking Bool value to specify blocking behaviour.
     def execute(self, component_name, parameter_name, blocking=True, mode=""):
         if component_name == "base":
-            return self.move_base(component_name, parameter_name, blocking)
+            return self.actions.move_base(component_name, parameter_name, blocking)
     
         elif component_name == "arm":
-            return self.move_arm_direct(component_name, parameter_name, blocking)
+            return self.actions.move_arm_direct(component_name, parameter_name, blocking)
     
         elif component_name == "gripper":
-            return self.move_gripper_joint(component_name, parameter_name, blocking)
+            return self.actions.move_gripper_joint(component_name, parameter_name, blocking)
 
 
 ## Deals with movements of the base.
@@ -146,96 +160,101 @@ class YouBotMoveBaseAction(BaseAction):
 class YouBotMoveArmDirect(BaseAction):
     action_name = "move_arm_direct"
 
+    def __init__(self, actions):
+        self.actions = actions
+
     def execute(self, component_name, parameter_name=[0, 0, 0, 0, 0, 0, "/base_link"], blocking=True):
-    if type(parameter_name) is str:
-        return self.move_arm_joint_direct(component_name, parameter_name, blocking)
-    elif type(parameter_name) is list:
-        if len(parameter_name) == 7:
-            return self.move_arm_cart_direct(component_name, parameter_name, blocking)
-        elif len(parameter_name) == 4:
-            return self.move_arm_cart_sample_rpy_direct(component_name, parameter_name, blocking)
-        else:
-            rospy.loginfo("parameter <<%s>> is not in the right format", parameter_name)
+        if type(parameter_name) is str:
+            return self.actions.move_arm_joint_direct(component_name, parameter_name, blocking)
+        elif type(parameter_name) is list:
+            if len(parameter_name) == 7:
+                return self.actions.move_arm_cart_direct(component_name, parameter_name, blocking)
+            elif len(parameter_name) == 4:
+                return self.actions.move_arm_cart_sample_rpy_direct(component_name, parameter_name, blocking)
+            else:
+                rospy.loginfo("parameter <<%s>> is not in the right format", parameter_name)
 
-                
-def move_arm_joint_direct(self, component_name, parameter_name="", blocking=True):
-    ah = action_handle("move_arm_joint_direct", component_name, parameter_name, blocking, self.parse)
-    if(self.parse):
-        return ah
-    else:
-        ah.set_active()
 
-    rospy.loginfo("Move <<%s>> DIRECT to <<%s>>", component_name, parameter_name)
+class YouBotMoveArmJointDirect(BaseAction):
+    action_name = "move_arm_joint_direct"
 
-    # get pose from parameter server
-    if type(parameter_name) is str:
-        if not rospy.has_param(self.ns_global_prefix + "/" + component_name + "/" + parameter_name):
-            rospy.logerr("parameter %s does not exist on ROS Parameter Server, aborting...", self.ns_global_prefix + "/" + component_name + "/" + parameter_name)
-            ah.set_failed(2)
+    def execute(self, component_name, parameter_name="", blocking=True):
+        ah = action_handle("move_arm_joint_direct", component_name, parameter_name, blocking, self.parse)
+        if(self.parse):
             return ah
-        param = rospy.get_param(self.ns_global_prefix + "/" + component_name + "/" + parameter_name)
-    else:
-        param = parameter_name
+        else:
+            ah.set_active()
 
-    # check pose
-    if not type(param) is list: # check outer list
-        rospy.logerr("no valid parameter for %s: not a list, aborting...", component_name)
-        print "parameter is:", param
-        ah.set_failed(3)
-        return ah
-    else:
-        #print i,"type1 = ", type(i)
-        DOF = 5
-        if not len(param) == DOF: # check dimension
-            rospy.logerr("no valid parameter for %s: dimension should be %d and is %d, aborting...", component_name, DOF, len(param))
+        rospy.loginfo("Move <<%s>> DIRECT to <<%s>>", component_name, parameter_name)
+
+        # get pose from parameter server
+        if type(parameter_name) is str:
+            if not rospy.has_param(self.ns_global_prefix + "/" + component_name + "/" + parameter_name):
+                rospy.logerr("parameter %s does not exist on ROS Parameter Server, aborting...", self.ns_global_prefix + "/" + component_name + "/" + parameter_name)
+                ah.set_failed(2)
+                return ah
+            param = rospy.get_param(self.ns_global_prefix + "/" + component_name + "/" + parameter_name)
+        else:
+            param = parameter_name
+
+        # check pose
+        if not type(param) is list: # check outer list
+            rospy.logerr("no valid parameter for %s: not a list, aborting...", component_name)
             print "parameter is:", param
             ah.set_failed(3)
             return ah
         else:
-            for i in param:
-                #print i,"type2 = ", type(i)
-                if not ((type(i) is float) or (type(i) is int)): # check type
-                    #print type(i)
-                    rospy.logerr("no valid parameter for %s: not a list of float or int, aborting...", component_name)
-                    print "parameter is:", param
-                    ah.set_failed(3)
-                    return ah
-                else:
-                    rospy.logdebug("accepted parameter %f for %s", i, component_name)
+            #print i,"type1 = ", type(i)
+            DOF = 5
+            if not len(param) == DOF: # check dimension
+                rospy.logerr("no valid parameter for %s: dimension should be %d and is %d, aborting...", component_name, DOF, len(param))
+                print "parameter is:", param
+                ah.set_failed(3)
+                return ah
+            else:
+                for i in param:
+                    #print i,"type2 = ", type(i)
+                    if not ((type(i) is float) or (type(i) is int)): # check type
+                        #print type(i)
+                        rospy.logerr("no valid parameter for %s: not a list of float or int, aborting...", component_name)
+                        print "parameter is:", param
+                        ah.set_failed(3)
+                        return ah
+                    else:
+                        rospy.logdebug("accepted parameter %f for %s", i, component_name)
 
 
-    pose_goal = raw_arm_navigation.msg.MoveToJointConfigurationGoal()
+        pose_goal = raw_arm_navigation.msg.MoveToJointConfigurationGoal()
 
-    for i in range(DOF):
-        jv = brics_actuator.msg.JointValue()
-        jv.joint_uri = self.arm1_joint_names[i]
-        jv.value = param[i]
-        jv.unit = "rad"
-        pose_goal.goal.positions.append(jv)
+        for i in range(DOF):
+            jv = brics_actuator.msg.JointValue()
+            jv.joint_uri = self.arm1_joint_names[i]
+            jv.value = param[i]
+            jv.unit = "rad"
+            pose_goal.goal.positions.append(jv)
 
-    action_server_name = "/arm_1/arm_controller/MoveToJointConfigurationDirect"
+        action_server_name = "/arm_1/arm_controller/MoveToJointConfigurationDirect"
 
-    rospy.logdebug("calling %s action server", action_server_name)
-    client = actionlib.SimpleActionClient(action_server_name, MoveToJointConfigurationAction)
-    # trying to connect to server
-    rospy.logdebug("waiting for %s action server to start", action_server_name)
-    if not client.wait_for_server(rospy.Duration(5)):
-        # error: server did not respond
-        rospy.logerr("%s action server not ready within timeout, aborting...", action_server_name)
-        ah.set_failed(4)
-        return ah
-    else:
-        rospy.logdebug("%s action server ready", action_server_name)
+        rospy.logdebug("calling %s action server", action_server_name)
+        client = actionlib.SimpleActionClient(action_server_name, MoveToJointConfigurationAction)
+        # trying to connect to server
+        rospy.logdebug("waiting for %s action server to start", action_server_name)
+        if not client.wait_for_server(rospy.Duration(5)):
+            # error: server did not respond
+            rospy.logerr("%s action server not ready within timeout, aborting...", action_server_name)
+            ah.set_failed(4)
+            return ah
+        else:
+            rospy.logdebug("%s action server ready", action_server_name)
 
 
-    #print client_goal
-    client.send_goal(pose_goal)
-    ah.set_client(client)
+        #print client_goal
+        client.send_goal(pose_goal)
+        ah.set_client(client)
 
-    ah.wait_inside()
+        ah.wait_inside()
 
-    return ah
-    
+        return ah    
 
 class YouBotMoveArmCartDirect(BaseAction):
     action_name = "move_arm_cart_direct"
