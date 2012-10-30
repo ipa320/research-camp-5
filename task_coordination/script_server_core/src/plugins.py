@@ -52,10 +52,12 @@ import roslib.rospack
 import roslib.packages
 import rospy
 
-from IPython.Shell import IPShellEmbed
-ipshell = IPShellEmbed()
+from script_server_core.base_action import BaseAction
 
-def load_module(module_name):
+#from IPython.Shell import IPShellEmbed
+#ipshell = IPShellEmbed()
+
+def load_module(module_name, actions):
     """
     Introspect Python module and return actions defined in that file.
     @param module_name This is a universal name that is used in two ways:
@@ -65,8 +67,6 @@ def load_module(module_name):
     @return: a list of actions
     @rtype:  list of action class instances
     """
-    actions = []
-
     pkg_dir = roslib.packages.get_pkg_dir(module_name)
     dirs = [os.path.join(pkg_dir, d) for d in ['src', 'lib']]
     sys.path = dirs + sys.path
@@ -75,14 +75,29 @@ def load_module(module_name):
     roslib.load_manifest(module_name)
     manip_actions_mod = imp.load_module(module_name, fp, pn, desc)
 
-    actions = [a[1]() #instantiates action
-               # for all members of type class of the just opened module
-               for a in inspect.getmembers(manip_actions_mod, inspect.isclass)
-               # if the member is a (direct or indirect) sub-class of BaseAction
-               if issubclass(a[1], BaseAction)
-               # and it has an action name, i.e. it is not a base class
-               and hasattr(a[1], "action_name") and a[1].action_name != None
-               # and it has no disabled field or the field is set to false
-               and (not hasattr(a[1], "disabled") or not a[1].disabled)]
+    #new_actions = [a[1](actions) #instantiates action
+    #               # for all members of type class of the just opened module
+    #               for a in inspect.getmembers(manip_actions_mod, inspect.isclass)
+    #               # if the member is a (direct or indirect) sub-class of BaseAction
+    #               if issubclass(a[1], BaseAction)
+    #               # and it has an action name, i.e. it is not a base class
+    #               and hasattr(a[1], "action_name") and a[1].action_name != None
+    #               # and it has no disabled field or the field is set to false
+    #               and (not hasattr(a[1], "disabled") or not a[1].disabled)]
 
+    new_actions = []
+    for a in inspect.getmembers(manip_actions_mod, inspect.isclass):
+        if issubclass(a[1], BaseAction) and hasattr(a[1], "action_name") and a[1].action_name != None and (not hasattr(a[1], "disabled") or not a[1].disabled):
+            print("Need to load %s" % a[1].action_name)
+            if hasattr(a[1], "__init__") and len(inspect.getargspec(a[1].__init__).args) > 1:
+                new_actions.append(a[1](actions))
+            else:
+                new_actions.append(a[1]())
+
+
+    for a in new_actions:
+        if a.action_name in actions:
+            raise Exception("Action %s already exists" % a.action_name)
+
+    actions.update(dict([(a.action_name, a) for a in new_actions]))
     return actions

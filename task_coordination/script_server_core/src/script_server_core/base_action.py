@@ -8,9 +8,6 @@ class BaseAction:
     action_name = None
     disabled = False
 
-    def __init__(self, actions):
-        self.actions = actions
-
     def __call__(self, *args, **kwargs):
         return self.execute(*args, **kwargs)
 
