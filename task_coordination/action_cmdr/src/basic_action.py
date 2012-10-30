@@ -2,7 +2,7 @@
 ## Simple script server actions
 #
 # Implements the python interface for the script server actions.
-class BaseAction:
+class BasicAction:
 
     # You must override this!
     action_name = None
