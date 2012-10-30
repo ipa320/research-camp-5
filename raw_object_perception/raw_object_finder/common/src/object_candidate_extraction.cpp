@@ -103,7 +103,9 @@ void CObjectCandidateExtraction::extractObjectCandidates(pcl::PointCloud<
 		unsigned int total_point_cloud_size = total_point_cloud.points.size();
 
 //		int chunk = total_point_cloud_size / 4;
+#ifdef _OPENMP
 		omp_set_num_threads(4);
+#endif
 #pragma omp parallel shared (total_point_cloud,chunk) private(j)
 		{
 #pragma omp for schedule(dynamic,chunk) nowait

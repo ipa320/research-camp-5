@@ -245,6 +245,10 @@ std::vector<structPlanarSurface> CPlaneExtraction::createPlanarHierarchy(
 		//reconstruct does not fill width and height of the pointcloud
 
 		planarSurface.area = toolBox.areaConvexHull2d(planarSurface.convexHull);
+		if(planarSurface.area < 0.0)
+		{
+			planarSurface.area = -planarSurface.area;
+		}
 		if (planarSurface.area < MIN_PLANAR_AREA_SIZE) //minimum 0.01f area size
 		{
 			ROS_DEBUG("[createPlanarHierarchy] Surface %d skipped -> area=%f < %f",planarSurface.id,planarSurface.area,MIN_PLANAR_AREA_SIZE);
