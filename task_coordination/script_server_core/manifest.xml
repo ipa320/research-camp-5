@@ -1,0 +1,17 @@
+<package>
+  <description brief="script_server_core">
+
+     script_server_core
+
+  </description>
+  <author>Florian Weisshardt</author>
+  <license>LGPL</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/script_server_core</url>
+
+  <depend package="rospy" />
+  <depend package="actionlib" />
+
+</package>
+
+
