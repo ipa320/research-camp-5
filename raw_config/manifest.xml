@@ -1,0 +1,10 @@
+<package>
+  <description brief="raw_config">
+    Central configuration repository for RoboCup@Work tasks.
+  </description>
+  <author>Tim Niemueller</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+</package>
+
+

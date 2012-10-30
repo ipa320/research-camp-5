@@ -9,6 +9,10 @@ include($ENV{ROS_ROOT}/core/rosbuild/rosbuild.cmake)
 #  MinSizeRel     : w/o debug symbols, w/ optimization, stripped binaries
 #set(ROS_BUILD_TYPE RelWithDebInfo)
 
+## check required prerequisites
+SET(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake_modules")
+
+
 rosbuild_find_ros_package(actionlib_msgs)
 include(${actionlib_msgs_PACKAGE_PATH}/cmake/actionbuild.cmake)
 genaction()
