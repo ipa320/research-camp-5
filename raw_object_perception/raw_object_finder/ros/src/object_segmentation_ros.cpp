@@ -60,6 +60,7 @@ class object_segmentation_ros
 				n_.param("downsampling_distance", component_config_.downsampling_distance, (double)0.005);
 				n_.param("min_points_per_objects", component_config_.min_points_per_objects, (int)11);
 				n_.param("spherical_distance", component_config_.spherical_distance, (double)2.5);
+				n_.param("point_cloud_in", component_config_.point_cloud_in, (std::string)"/camera/rgb/points");
             
         }
 		
@@ -79,6 +80,7 @@ class object_segmentation_ros
 				component_config_.downsampling_distance = config.downsampling_distance;
 				component_config_.min_points_per_objects = config.min_points_per_objects;
 				component_config_.spherical_distance = config.spherical_distance;
+				component_config_.point_cloud_in = config.point_cloud_in;
 		}
 
         void configure()

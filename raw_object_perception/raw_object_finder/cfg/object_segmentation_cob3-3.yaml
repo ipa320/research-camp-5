@@ -4,9 +4,10 @@ min_x: 0.5
 max_x: 2.0
 min_y: -2.0
 max_y: 2.0
-min_z: 1.0
+min_z: 0.5
 max_z: 2.0
 threshold_points_above_lower_plane: 0.01
 downsampling_distance: 0.005
 min_points_per_obj: 11
 spherical_distance: 2.5
+object_segmentation/point_cloud_in: "/cam3d/rgb/points"
