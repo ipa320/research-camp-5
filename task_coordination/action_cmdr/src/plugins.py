@@ -39,7 +39,7 @@ Loads script server plugins.
 Based on work done at CMU PRL and SRI for manipapp (TN).
 """
 
-PKG = 'script_server_core'
+PKG = 'action_cmdr'
 import roslib; roslib.load_manifest(PKG)
 
 import os
@@ -52,7 +52,7 @@ import roslib.rospack
 import roslib.packages
 import rospy
 
-from script_server_core.base_action import BaseAction
+from action_cmdr.base_action import BaseAction
 
 #from IPython.Shell import IPShellEmbed
 #ipshell = IPShellEmbed()
