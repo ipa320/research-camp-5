@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <launch>
 	<!-- upload object_segmentation parameter -->
-	<!--rosparam command="load" ns="raw_perception/object_segmentation" file="$(find raw_object_finder)/cfg/object_segmentation_$(env ROBOT).yaml"/-->		
+	<rosparam command="load" ns="raw_perception/object_segmentation" file="$(find raw_object_finder)/cfg/object_segmentation_$(env ROBOT).yaml"/>		
 
 	<!-- cluster bounding box finder-->
 	<node pkg="object_manipulator" type="cluster_bounding_box_finder_server.py" name="cluster_bounding_box_finder" ns="raw_perception/object_segmentation" output="log" respawn="false">
@@ -9,8 +9,6 @@
 	</node>
 
 	<!-- object segmentation -->
-	<node pkg="raw_object_finder" type="object_segmentation" name="object_segmentation" ns="raw_perception/object_segmentation" output="screen" >
-		<remap from="/camera/rgb/points" to="/cam3d/rgb/points"/>
-	</node>
+	<node pkg="raw_object_finder" type="object_segmentation" name="object_segmentation" ns="raw_perception/object_segmentation" output="screen" />
 
 </launch>
