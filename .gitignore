@@ -6,3 +6,5 @@ lib/
 
 *.so
 *.pyc
+
+ROS_NOBUILD
