@@ -67,7 +67,7 @@ import math
 
 # ROS imports
 import roslib
-roslib.load_manifest('cob_script_server')
+roslib.load_manifest('action_cmdr')
 import rospy
 import actionlib
 

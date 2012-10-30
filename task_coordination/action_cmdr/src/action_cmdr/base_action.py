@@ -11,5 +11,5 @@ class BaseAction:
     def __call__(self, *args, **kwargs):
         return self.execute(*args, **kwargs)
 
-    def execute(self):
+    def execute(self, *args, **kwargs):
         raise NotImplementedError("Execute not implemented")
