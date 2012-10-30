@@ -1,0 +1,12 @@
+# Parameters currently missing for scenario, e.g. hardcoded somewhere
+
+
+# raw_base_placement placement_wrt_workspace_action_server.cpp
+laser_linear_regression:
+  # angles in degree
+  min_angle: -22.5
+  max_angle:  22.5
+  # distances in meters
+  min_dist: 0.02
+  max_dist: 0.80
+

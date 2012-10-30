@@ -1,0 +1,18 @@
+<package>
+  <description brief="script_server_youbot_util">
+
+     script_server_youbot_util
+
+  </description>
+  <author>Tim Niemueller</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/script_server_youbot_util</url>
+  <depend package="rospy"/>
+  <depend package="actionlib"/>
+  <depend package="actionlib_msgs"/>
+  <depend package="smach"/>
+
+</package>
+
+
