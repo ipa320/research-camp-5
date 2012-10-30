@@ -88,7 +88,7 @@ def load_module(module_name, actions):
     new_actions = []
     for a in inspect.getmembers(manip_actions_mod, inspect.isclass):
         if issubclass(a[1], BaseAction) and hasattr(a[1], "action_name") and a[1].action_name != None and (not hasattr(a[1], "disabled") or not a[1].disabled):
-            print("Need to load %s" % a[1].action_name)
+            #print("Need to load %s" % a[1].action_name)
             if hasattr(a[1], "__init__") and len(inspect.getargspec(a[1].__init__).args) > 1:
                 new_actions.append(a[1](actions))
             else:
