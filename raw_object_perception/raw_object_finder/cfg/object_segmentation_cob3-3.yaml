@@ -1,12 +1,14 @@
-camera_frame: "/openni_rgb_optical_frame"
+camera_frame: /head_cam3d_link
 extract_obj_in_rgb_img: False
-min_x: 0.5
+min_x: 0.25
 max_x: 2.0
-min_y: -2.0
-max_y: 2.0
-min_z: 1.0
-max_z: 2.0
+min_y: -0.2
+max_y: 0.2
+min_z: 0.5
+max_z: 1.5
 threshold_points_above_lower_plane: 0.01
 downsampling_distance: 0.005
 min_points_per_obj: 11
 spherical_distance: 2.5
+
+point_cloud_in: "/cam3d/rgb/points"
