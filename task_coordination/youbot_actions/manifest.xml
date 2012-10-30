@@ -1,13 +1,11 @@
 <package>
-  <description brief="script_server_youbot_util">
-
-     script_server_youbot_util
-
+  <description brief="youbot_actions">
+     Action specific to the youbot.
   </description>
   <author>Tim Niemueller</author>
   <license>BSD</license>
   <review status="unreviewed" notes=""/>
-  <url>http://ros.org/wiki/script_server_youbot_util</url>
+  <url>http://ros.org/wiki/youbot_actions</url>
   <depend package="rospy"/>
   <depend package="actionlib"/>
   <depend package="actionlib_msgs"/>

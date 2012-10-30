@@ -10,7 +10,7 @@
 from action_cmdr.base_action import BaseAction
 
 import roslib
-roslib.load_manifest('script_server_youbot_util')
+roslib.load_manifest('youbot_actions')
 import rospy
 import actionlib
 import tf
