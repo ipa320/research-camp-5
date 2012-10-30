@@ -55,7 +55,7 @@ class adjust_pose_wrt_platform(smach.State):
         rospy.loginfo("action server <<%s>> is ready ...", self.ac_base_adj_name);
         action_goal = raw_base_placement.msg.OrientToBaseActionGoal()
             
-        action_goal.goal.distance = 0.1;
+        action_goal.goal.distance = 0.4;
         rospy.loginfo("send action");
         self.ac_base_adj.send_goal(action_goal.goal);
         

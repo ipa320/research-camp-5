@@ -42,7 +42,7 @@ class object_segmentation_ros
         	
         		std::string get_scene_objects_remap;
         		n_.param("get_scene_objects_remap", get_scene_objects_remap, (std::string)"get_scene_objects");
-        		get_scene_objects_ = n_.advertiseService(get_scene_objects_remap, &object_segmentation_impl::callback_get_scene_objects, &component_implementation_);
+        		get_scene_objects_ = n_.advertiseService<brics_3d_msgs::GetSceneObjects::Request , brics_3d_msgs::GetSceneObjects::Response>(get_scene_objects_remap, boost::bind(&object_segmentation_impl::callback_get_scene_objects, &component_implementation_,_1,_2,component_config_));
         
 				object_points_ = 	n_.advertise<sensor_msgs::PointCloud2>("object_points", 1);
 				plane_points_ = 	n_.advertise<sensor_msgs::PointCloud2>("plane_points", 1);
