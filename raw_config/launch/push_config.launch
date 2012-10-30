@@ -1,0 +1,3 @@
+<launch>
+  <rosparam command="load" file="$(find raw_config)/cfg/$(env ROBOT)/missing.yaml" />
+</launch>
