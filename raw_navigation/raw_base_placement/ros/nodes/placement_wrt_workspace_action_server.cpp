@@ -10,6 +10,8 @@
 #include <raw_base_placement/BaseScanLinearRegression.h>
 #include <iostream>
 
+#include <angles/angles.h>
+
 using namespace raw_base_placement;
 
 
@@ -133,10 +135,20 @@ public:
 
 		BaseScanLinearRegression srv;
 
-		srv.request.filter_minAngle = -M_PI / 8.0;
-		srv.request.filter_maxAngle = M_PI / 8.0;
-		srv.request.filter_minDistance = 0.02;
-		srv.request.filter_maxDistance = 0.80;
+		double min_angle, max_angle, min_dist, max_dist;
+		nh_.getParamCached("/laser_linear_regression/min_angle", min_angle);
+		nh_.getParamCached("/laser_linear_regression/max_angle", max_angle);
+		nh_.getParamCached("/laser_linear_regression/min_dist", min_dist);
+		nh_.getParamCached("/laser_linear_regression/max_dist", max_dist);
+
+		srv.request.filter_minAngle = angles::from_degrees(min_angle);
+		srv.request.filter_maxAngle = angles::from_degrees(max_angle);
+		srv.request.filter_minDistance = min_dist;
+		srv.request.filter_maxDistance = max_dist;
+		//srv.request.filter_minAngle = -M_PI / 8.0;
+		//srv.request.filter_maxAngle = M_PI / 8.0;
+		//srv.request.filter_minDistance = 0.02;
+		//srv.request.filter_maxDistance = 0.80;
 
 		target_distance = goal->distance;
 
