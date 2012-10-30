@@ -7,7 +7,7 @@
 # Copyright (c) 2012 Tim Niemueller [www.niemueller.de]
 #################################################################
 
-from action_cmdr.base_action import BaseAction
+from action_cmdr.basic_action import BasicAction
 
 import roslib
 roslib.load_manifest('youbot_actions')
@@ -15,13 +15,13 @@ import rospy
 import actionlib
 import tf
 
-class PrintAction(BaseAction):
+class PrintAction(BasicAction):
     action_name = "printit"
 
     def execute(self, what_to_print):
         print("YES! %s" % what_to_print)
 
-class TestAction(BaseAction):
+class TestAction(BasicAction):
     action_name = "test"
 
     def __init__(self, actions):
@@ -36,7 +36,7 @@ class TestAction(BaseAction):
 # Based on the component, the corresponding move functions will be called.
 #
 
-class YouBotMoveAction(BaseAction):
+class YouBotMoveAction(BasicAction):
     action_name = "move"
 
     def __init__(self, actions):
@@ -59,7 +59,7 @@ class YouBotMoveAction(BaseAction):
 ## Deals with movements of the base.
 #
 # A target will be sent to the actionlib interface of the move_base node.
-class YouBotMoveBaseAction(BaseAction):
+class YouBotMoveBaseAction(BasicAction):
 
     action_name = "move_base"
 
@@ -157,7 +157,7 @@ class YouBotMoveBaseAction(BaseAction):
 ##### ARM MOVEMENTS WITHOUT PLANNING
 #########################################################
 
-class YouBotMoveArmDirect(BaseAction):
+class YouBotMoveArmDirect(BasicAction):
     action_name = "move_arm_direct"
 
     def __init__(self, actions):
@@ -175,7 +175,7 @@ class YouBotMoveArmDirect(BaseAction):
                 rospy.loginfo("parameter <<%s>> is not in the right format", parameter_name)
 
 
-class YouBotMoveArmJointDirect(BaseAction):
+class YouBotMoveArmJointDirect(BasicAction):
     action_name = "move_arm_joint_direct"
 
     def execute(self, component_name, parameter_name="", blocking=True):
@@ -256,7 +256,7 @@ class YouBotMoveArmJointDirect(BaseAction):
 
         return ah    
 
-class YouBotMoveArmCartDirect(BaseAction):
+class YouBotMoveArmCartDirect(BasicAction):
     action_name = "move_arm_cart_direct"
 
     def execute(self, component_name, parameter_name=[0, 0, 0, 0, 0, 0, "/base_link"], blocking=True):
@@ -350,7 +350,7 @@ class YouBotMoveArmCartDirect(BaseAction):
         return ah
 
 
-class YouBotMoveArmCartSampleRPYDirect(BaseAction):
+class YouBotMoveArmCartSampleRPYDirect(BasicAction):
     action_name = "move_arm_cart_sample_rpy_direct"
 
     def execute(self, component_name, parameter_name=[0, 0, 0, "/base_link"], blocking=True):
@@ -444,7 +444,7 @@ class YouBotMoveArmCartSampleRPYDirect(BaseAction):
         return ah
     
 
-class YouBotMoveGripperJoint(BaseAction):
+class YouBotMoveGripperJoint(BasicAction):
     action_name = "move_gripper_joint"
 
     def execute(self, component_name, parameter_name="", blocking=True):
