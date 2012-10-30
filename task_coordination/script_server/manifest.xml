@@ -1,0 +1,16 @@
+<package>
+  <description brief="script_server">
+
+     script_server
+
+  </description>
+  <author>Florian Weisshardt</author>
+  <license>LGPL</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/script_server</url>
+
+  <depend package="script_server_core" />
+
+</package>
+
+
