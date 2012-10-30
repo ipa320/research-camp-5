@@ -72,157 +72,57 @@ import rospy
 import actionlib
 
 
-graph=""
-graph_wait_list=[]
-function_counter = 0
-ah_counter = 0
-graph = pgv.AGraph()
-graph.node_attr['shape']='box'
-last_node = "Start"
-
-
 #------------------- action_handle section -------------------#	
 ## Action handle class.
 #
 # The action handle is used to implement asynchronous behaviour within the script.
 class action_handle:
 	## Initializes the action handle.
-	def __init__(self, function_name, component_name, parameter_name, blocking, parse):
-		global graph
-		global function_counter
-		self.parent_node = ""
+	def __init__(self, function_name, component_name, parameter_name, blocking):
 		self.error_code = -1
 		self.wait_log = False
-		self.function_counter = function_counter
 		self.function_name = function_name
 		self.component_name = component_name
 		self.parameter_name = parameter_name
-		self.state = ScriptState.UNKNOWN
 		self.blocking = blocking
-		self.AppendNode(blocking)
-		self.client = actionlib.SimpleActionClient("dummy",ScriptAction)
+		self.client = None
 
 	## Sets the actionlib client.
 	def set_client(self,client):
 		self.client = client
 
-	## Sets the execution state to active, if not paused
-	def set_active(self):
-		self.check_pause()
-		self.state = ScriptState.ACTIVE
-		self.error_code = -1
-		self.PublishState()
-		
-		global ah_counter
-		ah_counter += 1
-		
-	## Checks for pause
-	def check_pause(self):
-		param_string = "/script_server/pause"
-		while bool(rospy.get_param(param_string,False)):
-			rospy.logwarn("Script is paused...")
-			self.state = ScriptState.PAUSED
-			self.PublishState()
-			rospy.sleep(1)
-		if self.state == ScriptState.PAUSED:
-			rospy.loginfo("...continuing script")
-		
-	## Sets the execution state to succeeded.
-	def set_succeeded(self):
-		self.state = ScriptState.SUCCEEDED
-		self.error_code = 0
-		self.PublishState()
-		
-		global ah_counter
-		ah_counter -= 1
-		
-	## Sets the execution state to failed.
-	def set_failed(self,error_code):
-		self.state = ScriptState.FAILED
-		self.error_code = error_code
-		self.PublishState()
+	## Gets the actionlib client.
+	def get_client(self,client):
+		return self.client
 
-		global ah_counter
-		ah_counter -= 1
-		
 	## Gets the state of an action handle.
 	def get_state(self):
 		return self.client.get_state()
 
+	## Cancel action
+	#
+	# Cancels action goal(s).
+	def cancel(self):
+		self.client.cancel_all_goals()
+
+	## Sets the execution state to succeeded.
+	def set_succeeded(self):
+		self.error_code = 0
+		
+	## Sets the execution state to failed.
+	def set_failed(self,error_code):
+		self.error_code = error_code
+		
 	## Gets the error code of an action handle.
 	def get_error_code(self):
 		return self.error_code
 	
-	## Returns the graphstring.
-	def GetGraphstring(self):
-		if type(self.parameter_name) is types.StringType:
-			graphstring = str(self.function_counter)+"_"+self.function_name+"_"+self.component_name+"_"+self.parameter_name
-		else:
-			graphstring = str(self.function_counter)+"_"+self.function_name+"_"+self.component_name
-		return graphstring
-
-	## Gets level of function name.
-	def GetLevel(self,function_name):
-		if (function_name == "move"):
-			level = 0
-		elif (function_name == "init"):
-			level = 1
-		elif (function_name == "stop"):
-			level = 1
-		elif (function_name == "sleep"):
-			level = 2
-		else:
-			level = 100
-		return level
-		
-	## Appends a registered function to the graph.
-	def AppendNode(self, blocking=True):
-		global graph
-		global graph_wait_list
-		global function_counter
-		global last_node
-		graphstring = self.GetGraphstring()
-		if self.parse:
-			if ( self.level >= self.GetLevel(self.function_name)):
-				#print "adding " + graphstring + " to graph"
-				graph.add_edge(last_node, graphstring)
-				for waiter in graph_wait_list:
-					graph.add_edge(waiter, graphstring)
-				graph_wait_list=[]
-				if blocking:
-					last_node = graphstring
-				else:
-					self.parent_node = graphstring
-			#else:
-				#print "not adding " + graphstring + " to graph"
-		#else:
-			#self.PublishState()
-		function_counter += 1
-		
-	## Publishs the state of the action handle
-	def PublishState(self):
-		script_state = ScriptState()
-		script_state.header.stamp = rospy.Time.now()
-		script_state.number = self.function_counter
-		script_state.function_name = self.function_name
-		script_state.component_name = self.component_name
-		script_state.full_graph_name = self.GetGraphstring()
-		if ( type(self.parameter_name) is str ):
-			script_state.parameter_name = self.parameter_name
-		else:
-			script_state.parameter_name = ""
-		script_state.state = self.state
-		script_state.error_code = self.error_code
-		self.state_pub.publish(script_state)
-		
 	## Handles wait.
 	#
 	# This function is meant to be uses directly in the script.
 	#
 	# \param duration Duration for timeout.
 	def wait(self, duration=None):
-		global ah_counter
-		ah_counter += 1
 		self.blocking = True
 		self.wait_for_finished(duration,True)
 
@@ -245,12 +145,6 @@ class action_handle:
 	# \param duration Duration for timeout.
 	# \param logging Enables or disables logging for this wait.
 	def wait_for_finished(self, duration, logging):
-		global graph_wait_list
-		if(self.parse):
-			if(self.parent_node != ""):
-				graph_wait_list.append(self.parent_node)
-			return
-
 		if self.error_code <= 0:			
 			if duration is None:
 				if logging:
@@ -280,9 +174,3 @@ class action_handle:
 			return
 			
 		self.set_succeeded() # full success
-	
-	## Cancel action
-	#
-	# Cancels action goal(s).
-	def cancel(self):
-		self.client.cancel_all_goals()
