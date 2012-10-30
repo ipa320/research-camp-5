@@ -52,7 +52,7 @@ CObjectCandidateExtraction::CObjectCandidateExtraction(double threshold_points_a
 void CObjectCandidateExtraction::extractObjectCandidates(pcl::PointCloud<
 		pcl::PointXYZRGB> &point_cloud,
 		pcl::PointCloud<pcl::PointXYZRGBNormal> &planar_point_cloud,
-		std::vector<structPlanarSurface> &hierarchyPlanes) {
+		std::vector<structPlanarSurface> &hierarchyPlanes, float min_planar_area_size) {
 
 	ROS_DEBUG("[extractObjectCandidates] extractObjectCandidates started ...");
 	ros::Time start, start2, finish, finish2, start3, finish3;
@@ -75,7 +75,7 @@ void CObjectCandidateExtraction::extractObjectCandidates(pcl::PointCloud<
 	ROS_DEBUG("[extractObjectCandidates] MovingLeastSquares done ... ");
 
 	hierarchyPlanes = horizontalSurfaceExtractor.extractMultiplePlanes(
-			point_cloud_normal, planar_point_cloud, clusteredPlanes, 2);
+			point_cloud_normal, planar_point_cloud, clusteredPlanes, 2, min_planar_area_size);
 
 	if (hierarchyPlanes.empty()) {
 		return;

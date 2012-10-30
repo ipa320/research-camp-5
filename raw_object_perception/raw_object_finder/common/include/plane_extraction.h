@@ -64,12 +64,11 @@ public:
 			pcl::PointXYZRGBNormal> &point_cloud_normal, pcl::PointCloud<
 			pcl::PointXYZRGBNormal> &planar_point_cloud_normal, std::vector<
 			pcl::PointCloud<pcl::PointXYZRGBNormal> > &clustered_planes,
-			int axis);
+			int axis, float min_planar_area_size);
 	std::vector<structPlanarSurface> createPlanarHierarchy(std::vector<
 			pcl::PointCloud<pcl::PointXYZRGBNormal> > &clustered_planes,
-			int axis);
+			int axis, float min_planar_area_size);
 	void setDistance(float fDistance);
-
 };
 
 #endif

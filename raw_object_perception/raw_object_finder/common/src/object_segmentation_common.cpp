@@ -39,6 +39,7 @@ public:
 		int min_points_per_objects;
 		double spherical_distance;
 		std::string point_cloud_in;
+		double min_planar_area_size;
 
 };
 
@@ -136,7 +137,7 @@ public:
 			std::vector<structPlanarSurface> hierarchy_planes;
 
 			ROS_INFO("extract object candidates");
-			object_candidate_extractor->extractObjectCandidates(point_cloud, planar_point_cloud, hierarchy_planes);
+			object_candidate_extractor->extractObjectCandidates(point_cloud, planar_point_cloud, hierarchy_planes, config.min_planar_area_size);
 
 			// extract the clustered planes and objects
 			std::vector<pcl::PointCloud<pcl::PointXYZRGBNormal> > clustered_objects;
