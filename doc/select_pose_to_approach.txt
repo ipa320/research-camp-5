@@ -1,0 +1,12 @@
+StateName: SELECT_POSE_TO_APPROACH
+Purpose/Description: switch to next pose to approach
+Input:
+	* base_pose_list
+	* base_pose_to_approach
+Output:
+	* base_pose_to_approach (first/next value in base_pose_list)
+	* success vs failure (event)
+Preconditions: base_pose_list and base_pose_to_approach initialized correctly
+Effects: output only
+Invariants/Guarantees: base_pose_to_approach is one from base_pose_list
+Possible Decomposition or Generalization: make pose list parameterizable
