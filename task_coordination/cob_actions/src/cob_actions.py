@@ -67,6 +67,8 @@ from cob_arm_navigation_python.MoveArm import MoveArm
 
 import roslib
 roslib.load_manifest('cob_actions')
+import action_cmdr
+action_cmdr.init("action_cmdr")
 import rospy
 import actionlib
 import tf
@@ -96,6 +98,14 @@ class TestAction(AbstractAction):
 # \param component_name Name of the component.
 # \param parameter_name Name of the parameter on the ROS parameter server.
 # \param blocking Bool value to specify blocking behaviour.
+
+class CObMoveGripperJoint(AbstractAction):
+    action_name = "move_gripper"
+    action_server_name_prefix = "/script_server"
+
+    def execute(self, target="", blocking=True):
+        return action_cmdr.move_joint_trajectory("sdh", "/sdh_controller/follow_joint_trajectory", target, blocking)
+
 
 class CObMoveArmAction(AbstractAction):
 	action_name = "move_arm"
