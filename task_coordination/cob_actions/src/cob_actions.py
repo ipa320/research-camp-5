@@ -126,7 +126,7 @@ class CObMoveArmAction(AbstractAction):
 			#rospy.logerr("not implemented yet")
 
 """
-def move(self,component_name,parameter_name,blocking=True, mode=None):
+def move(self, component_name, parameter_name, blocking=True, mode=None):
 	if component_name == "base":
 		return self.move_base(component_name,parameter_name,blocking, mode)
 	elif component_name == "arm" and mode=="planned":
@@ -674,7 +674,7 @@ class CObSetOperationMode(AbstractAction):
 	def __init__(self, actions):
 		self.actions = actions
 		
-	def execute(self,component_name,mode,blocking=True, planning=False):
+	def execute(self, component_name, mode, blocking=True, planning=False):
 		#rospy.loginfo("setting <<%s>> to operation mode <<%s>>",component_name, mode)
 		rospy.set_param("/" + component_name + "_controller/OperationMode",mode) # \todo TODO: remove and only use service call
 		#rospy.wait_for_service("/" + component_name + "_controller/set_operation_mode")
