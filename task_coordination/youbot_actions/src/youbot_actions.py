@@ -303,41 +303,17 @@ class YouBotMoveArmCartSampleRPYDirect(AbstractAction):
 
         rospy.loginfo("Move <<%s>> DIRECT to <<%s>>", component_name, target)
 
-        ## check pose
-        #if not type(target) is list: # check outer list
-            #rospy.logerr("no valid parameter for %s: not a list, aborting...", component_name)
-            #print "parameter is:", param
-            #ah.set_failed(3)
-            #return ah
-        #else:
-            ##print i,"type1 = ", type(i)
-            #DOF = 4
-            #if not len(param) == DOF: # check dimension
-                #rospy.logerr("no valid parameter for %s: dimension should be %d and is %d, aborting...", component_name, DOF, len(param))
-                #print "parameter is:", param
-                #ah.set_failed(3)
-                #return ah
-            #else:
-                #for i in param:
-                    ##print i,"type2 = ", type(i)
-                    #if i < (DOF - 1):
-                        #if not ((type(i) is float) or (type(i) is int)): # check type
-                            ##print type(i)
-                            #rospy.logerr("no valid parameter for %s: not a list of float or int (1-6), aborting...", component_name)
-                            #print "parameter is:", param
-                            #ah.set_failed(3)
-                            #return ah
-                        #else:
-                            #rospy.logdebug("accepted parameter %f for %s", i, component_name)
-                    #elif i == DOF:
-                        #if not (type(i) is string): # check type
-                            ##print type(i)
-                            #rospy.logerr("no valid parameter for %s: last parameter is not a string, aborting...", component_name)
-                            #print "parameter is:", param
-                            #ah.set_failed(3)
-                            #return ah
-                        #else:
-                            #rospy.logdebug("accepted parameter %f for %s", i, component_name)
+        # check pose
+        if not type(target) is list: # check outer list
+            rospy.logerr("no valid parameter for %s: not a list, aborting...", component_name)
+            print "parameter is:", param
+            ah.set_failed(3)
+            return ah
+        else:
+            if not len(target) == 4 or not type(target[0])==float or not type(target[1])==float or not type(target[2])==float or not type(target[3]) == str: # checking parameters
+                rospy.logerr("no valid target parameters for %s: %s; aborting...", component_name, target)
+                ah.set_failed(3)
+                return ah
 
         # convert to pose message
         pose = MoveToCartesianPoseGoal()
