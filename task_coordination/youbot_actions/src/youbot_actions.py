@@ -11,6 +11,8 @@ from action_cmdr.abstract_action import AbstractAction
 from action_cmdr.action_handle import ActionHandle
 from raw_arm_navigation.msg import MoveToJointConfigurationGoal, MoveToJointConfigurationAction, MoveToCartesianPoseAction
 from brics_actuator.msg import JointValue
+from geometry_msgs.msg import PoseStamped
+from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
 
 import roslib
 roslib.load_manifest('youbot_actions')
@@ -47,7 +49,7 @@ class YouBotMoveArmAction(AbstractAction):
     def __init__(self, actions):
         self.actions = actions
 
-    def execute(self, target, blocking):
+    def execute(self, target, blocking = True):
         if type(target) is str:
             return self.actions.move_arm_joint_parameter("arm", target, blocking)
         elif type(target) is list:
@@ -462,93 +464,91 @@ class YouBotMoveArmCartSampleRPYDirect(AbstractAction):
 ### Deals with movements of the base.
 ##
 ## A target will be sent to the actionlib interface of the move_base node.
-#class YouBotMoveBaseAction(AbstractAction):
-    #action_name = "move_base"
+class YouBotMoveBaseAction(AbstractAction):
+    action_name = "move_base"
+    ns_global_prefix = "/script_server"
 
-    ##
-    ## \param component_name Name of the component.
-    ## \param target Name of the parameter on the ROS parameter server.
-    ## \param blocking Bool value to specify blocking behaviour.
+    
+    # \param component_name Name of the component.
+    # \param target Name of the parameter on the ROS parameter server.
+    # \param blocking Bool value to specify blocking behaviour.
 
-    #def execute(self, component_name, target, blocking):
-        #ah = action_handle("move_base", component_name, target, blocking, self.parse)
-        #if(self.parse):
-            #return ah
-        #else:
-            #ah.set_active()
+    def execute(self, target, blocking = True):
+        component_name = "base"
+        ah = ActionHandle("move_base", component_name, target, blocking)
             
-        #rospy.loginfo("Move <<%s>> to <<%s>>", component_name, target)
+        rospy.loginfo("Move <<%s>> to <<%s>>", component_name, target)
 
-        ## get pose from parameter server
-        #if type(target) is str:
-            #if not rospy.has_param(self.ns_global_prefix + "/" + component_name + "/" + target):
-                #rospy.logerr("parameter %s does not exist on ROS Parameter Server, aborting...", self.ns_global_prefix + "/" + component_name + "/" + target)
-                #ah.set_failed(2)
-                #return ah
-            #param = rospy.get_param(self.ns_global_prefix + "/" + component_name + "/" + target)
-        #else:
-            #param = target
-        ## check pose
-        #if not type(param) is list: # check outer list
-            #rospy.logerr("no valid parameter for %s: not a list, aborting...", component_name)
+        #get pose from parameter server
+        if type(target) is str:
+            if not rospy.has_param(self.ns_global_prefix + "/" + component_name + "/" + target):
+                rospy.logerr("parameter %s does not exist on ROS Parameter Server, aborting...", self.ns_global_prefix + "/" + component_name + "/" + target)
+                ah.set_failed(2)
+                return ah
+            param = rospy.get_param(self.ns_global_prefix + "/" + component_name + "/" + target)
+        else:
+            param = target
+        #check pose
+        if not type(param) is list: # check outer list
+            rospy.logerr("no valid parameter for %s: not a list, aborting...", component_name)
             #print "parameter is:", param
-            #ah.set_failed(3)
-            #return ah
-        #else:
-            ##print i,"type1 = ", type(i)
-            #DOF = 3
-            #if not len(param) == DOF: # check dimension
-                #rospy.logerr("no valid parameter for %s: dimension should be %d and is %d, aborting...", component_name, DOF, len(param))
+            ah.set_failed(3)
+            return ah
+        else:
+            #print i,"type1 = ", type(i)
+            DOF = 3
+            if not len(param) == DOF: # check dimension
+                rospy.logerr("no valid parameter for %s: dimension should be %d and is %d, aborting...", component_name, DOF, len(param))
                 #print "parameter is:", param
-                #ah.set_failed(3)
-                #return ah
-            #else:
-                #for i in param:
-                ##print i,"type2 = ", type(i)
-                    #if not ((type(i) is float) or (type(i) is int)):
-                        ## check type
-                    ##print type(i)
-                        #rospy.logerr("no valid parameter for %s: not a list of float or int, aborting...", component_name)
-                        #print "parameter is:", param
-                        #ah.set_failed(3)
-                        #return ah
-                    #else:
-                        #rospy.logdebug("accepted parameter %f for %s", i, component_name)
+                ah.set_failed(3)
+                return ah
+            else:
+                for i in param:
+                #print i,"type2 = ", type(i)
+                    if not ((type(i) is float) or (type(i) is int)):
+                    #check type
+                    #print type(i)
+                        rospy.logerr("no valid parameter for %s: not a list of float or int, aborting...", component_name)
+                        print "parameter is:", param
+                        ah.set_failed(3)
+                        return ah
+                    else:
+                        rospy.logdebug("accepted parameter %f for %s", i, component_name)
 
-        ## convert to pose message
-        #pose = PoseStamped()
-        #pose.header.stamp = rospy.Time.now()
-        #pose.header.frame_id = "/map"
-        #pose.pose.position.x = param[0]
-        #pose.pose.position.y = param[1]
-        #pose.pose.position.z = 0.0
-        #q = tf.transformations.quaternion_from_euler(0, 0, param[2])
-        #pose.pose.orientation.x = q[0]
-        #pose.pose.orientation.y = q[1]
-        #pose.pose.orientation.z = q[2]
-        #pose.pose.orientation.w = q[3]
+        #convert to pose message
+        pose = PoseStamped()
+        pose.header.stamp = rospy.Time.now()
+        pose.header.frame_id = "/map"
+        pose.pose.position.x = param[0]
+        pose.pose.position.y = param[1]
+        pose.pose.position.z = 0.0
+        q = tf.transformations.quaternion_from_euler(0, 0, param[2])
+        pose.pose.orientation.x = q[0]
+        pose.pose.orientation.y = q[1]
+        pose.pose.orientation.z = q[2]
+        pose.pose.orientation.w = q[3]
 
-        #action_server_name = "/move_base"
+        action_server_name = "/move_base"
 
-        #rospy.logdebug("calling %s action server", action_server_name)
-        #client = actionlib.SimpleActionClient(action_server_name, MoveBaseAction)
+        rospy.logdebug("calling %s action server", action_server_name)
+        client = actionlib.SimpleActionClient(action_server_name, MoveBaseAction)
 
-    ## trying to connect to server
-        #rospy.logdebug("waiting for %s action server to start", action_server_name)
-        #if not client.wait_for_server(rospy.Duration(5)):
-            ## error: server did not respond
-            #rospy.logerr("%s action server not ready within timeout, aborting...", action_server_name)
-            #ah.set_failed(4)
-            #return ah
-        #else:
-            #rospy.logdebug("%s action server ready", action_server_name)
+        #trying to connect to server
+        rospy.logdebug("waiting for %s action server to start", action_server_name)
+        if not client.wait_for_server(rospy.Duration(5)):
+            #error: server did not respond
+            rospy.logerr("%s action server not ready within timeout, aborting...", action_server_name)
+            ah.set_failed(4)
+            return ah
+        else:
+            rospy.logdebug("%s action server ready", action_server_name)
 
-        ## sending goal
-        #client_goal = MoveBaseGoal()
-        #client_goal.target_pose = pose
-        ##print client_goal
-        #client.send_goal(client_goal)
-        #ah.set_client(client)
-        #ah.wait_inside()
+        # sending goal
+        client_goal = MoveBaseGoal()
+        client_goal.target_pose = pose
+        print client_goal
+        client.send_goal(client_goal)
+        ah.set_client(client)
+        ah.wait_inside()
 
-        #return ah
+        return ah
