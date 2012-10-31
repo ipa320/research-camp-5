@@ -107,7 +107,7 @@ class CObMoveAction(AbstractAction):
 	def execute(self, component_name, parameter_name, blocking=True, mode=''):
 		 # note that mode arg is dropped, make sure propagated through YoubotMoveAction
 		elif component_name == "arm" and mode=="planned":
-			return self.actions.move_planned(compoenent_name, parameter_name, blocking)
+			return self.actions.move_planned(component_name, parameter_name, blocking)
 		elif component_name == "arm": 
 			return self.actions.move_traj(component_name, parameter_name, blocking)
 		elif component_name == "gripper":
