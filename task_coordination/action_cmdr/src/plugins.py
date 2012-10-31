@@ -52,7 +52,7 @@ import roslib.rospack
 import roslib.packages
 import rospy
 
-from action_cmdr.base_action import BaseAction
+from action_cmdr.basic_action import BasicAction
 
 #from IPython.Shell import IPShellEmbed
 #ipshell = IPShellEmbed()
@@ -78,16 +78,16 @@ def load_module(module_name, actions):
     #new_actions = [a[1](actions) #instantiates action
     #               # for all members of type class of the just opened module
     #               for a in inspect.getmembers(manip_actions_mod, inspect.isclass)
-    #               # if the member is a (direct or indirect) sub-class of BaseAction
-    #               if issubclass(a[1], BaseAction)
-    #               # and it has an action name, i.e. it is not a base class
+    #               # if the member is a (direct or indirect) sub-class of BasicAction
+    #               if issubclass(a[1], BasicAction)
+    #               # and it has an action name, i.e. it is not a basic class
     #               and hasattr(a[1], "action_name") and a[1].action_name != None
     #               # and it has no disabled field or the field is set to false
     #               and (not hasattr(a[1], "disabled") or not a[1].disabled)]
 
     new_actions = []
     for a in inspect.getmembers(manip_actions_mod, inspect.isclass):
-        if issubclass(a[1], BaseAction) and hasattr(a[1], "action_name") and a[1].action_name != None and (not hasattr(a[1], "disabled") or not a[1].disabled):
+        if issubclass(a[1], BasicAction) and hasattr(a[1], "action_name") and a[1].action_name != None and (not hasattr(a[1], "disabled") or not a[1].disabled):
             #print("Need to load %s" % a[1].action_name)
             if hasattr(a[1], "__init__") and len(inspect.getargspec(a[1].__init__).args) > 1:
                 new_actions.append(a[1](actions))

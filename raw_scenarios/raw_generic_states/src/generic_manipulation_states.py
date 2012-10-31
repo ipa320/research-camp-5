@@ -32,7 +32,24 @@ class grasp_random_object(smach.State):
             #object.transform.transform.translation.y = object.transform.transform.translation.y - 0.005
 
             #handle_arm = sss.move("arm", [object.pose.pose.position.x, object.pose.pose.position.y, object.pose.pose.position.z, "/base_link"])
-            handle_arm = sss.move("arm", [object.transform.transform.translation.x, object.transform.transform.translation.y, object.transform.transform.translation.z, "/base_link"])
+            handle_arm = sss.move_cartesian("arm", [object.transform.transform.translation.x, object.transform.transform.translation.y, object.transform.transform.translation.z, "/base_link"])
+
+## component needs to specified explicitly or be configured via yaml file
+## component = "arm_controller" ### direct
+## component = "arm" ### via paramter arm --> namespace of FollowJointTrajectory-ActionServer
+#sss.move_joint_goal(component, string, blocking = True)
+#sss.move_joint_goal(component, [[],string,...], blocking = True) # trajectory[list] of joint configs[list]; joint config can be string or [double]
+#sss.move_joint_goal_planned(component, string, blocking = True)
+#sss.move_joint_goal_planned(component, [[],string,...], blocking = True) # trajectory[list] of joint configs[list]; joint config can be string or [double]
+#
+#sss.move_cartesian_planned(component,pose_stamped,blocking)
+#sss.move_cartesian_planned(component,pose_stamped) # blocking = True
+#sss.move_cartesian_planned(component,[[1,2,3],[4,5,6],frame_id]) # blocking = True
+#sss.move_cartesian_planned(component,[[1,2,3],frame_id]) # rpy=[current], blocking = True
+#sss.move_cartesian_planned(component,[[1,2,3]]) # rpy=[current],frame_id='/base_link', blocking = True
+#
+#
+## sss.move will be replaced by the upper functions
 
             if handle_arm.get_state() == 3:
                 sss.move("gripper", "close")
