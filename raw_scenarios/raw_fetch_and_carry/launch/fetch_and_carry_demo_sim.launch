@@ -1,5 +1,8 @@
 <?xml version="1.0"?>
 <launch>
+	<!-- load configuration -->
+	<include file="$(find raw_config)/launch/push_config.launch" />
+
 	<!-- base components -->
 	<include file="$(find raw_bringup_sim)/robots/robot.launch" />
 
