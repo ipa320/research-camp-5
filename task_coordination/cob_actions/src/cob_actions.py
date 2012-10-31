@@ -31,15 +31,15 @@
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
 #
-#     - Redistributions of source code must retain the above copyright
-#       notice, this list of conditions and the following disclaimer. \n
-#     - Redistributions in binary form must reproduce the above copyright
-#       notice, this list of conditions and the following disclaimer in the
-#       documentation and/or other materials provided with the distribution. \n
-#     - Neither the name of the Fraunhofer Institute for Manufacturing
-#       Engineering and Automation (IPA) nor the names of its
-#       contributors may be used to endorse or promote products derived from
-#       this software without specific prior written permission. \n
+#	 - Redistributions of source code must retain the above copyright
+#	   notice, this list of conditions and the following disclaimer. \n
+#	 - Redistributions in binary form must reproduce the above copyright
+#	   notice, this list of conditions and the following disclaimer in the
+#	   documentation and/or other materials provided with the distribution. \n
+#	 - Neither the name of the Fraunhofer Institute for Manufacturing
+#	   Engineering and Automation (IPA) nor the names of its
+#	   contributors may be used to endorse or promote products derived from
+#	   this software without specific prior written permission. \n
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Lesser General Public License LGPL as 
@@ -58,9 +58,12 @@
 #################################################################
 
 from action_cmdr.abstract_action import AbstractAction
-from action_cmdr.action_handle import action_handle
+from action_cmdr.action_handle import ActionHandle
 from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
+from geometry_msgs.msg import PoseStamped
 from control_msgs.msg import FollowJointTrajectoryAction, FollowJointTrajectoryGoal
+from cob_arm_navigation_python.MotionPlan import MotionPlan
+from cob_arm_navigation_python.MoveArm import MoveArm
 
 import roslib
 roslib.load_manifest('cob_actions')
@@ -94,8 +97,9 @@ class TestAction(AbstractAction):
 # \param parameter_name Name of the parameter on the ROS parameter server.
 # \param blocking Bool value to specify blocking behaviour.
 
-class CObMoveAction(AbstractAction):
-	action_name = "move"
+class CObMoveArmAction(AbstractAction):
+	action_name = "move_arm"
+	DOF = 7
 
 	def __init__(self, actions):
 		self.actions = actions
@@ -104,14 +108,22 @@ class CObMoveAction(AbstractAction):
 	# \param parameter_name Name of the parameter on the ROS parameter server.	
 	# \param blocking Bool value to specify blocking behaviour.
 	
-	def execute(self, component_name, parameter_name, blocking=True, mode=''):
-		 # note that mode arg is dropped, make sure propagated through YoubotMoveAction
-		elif component_name == "arm" and mode=="planned":
-			return self.actions.move_planned(component_name, parameter_name, blocking)
-		elif component_name == "arm": 
-			return self.actions.move_traj(component_name, parameter_name, blocking)
-		elif component_name == "gripper":
-			return self.actions.move_gripper_joint(component_name, parameter_name, blocking)
+	def execute(self, target, blocking=True):
+		if type(target) is str:
+			return self.actions.move_arm_joint_parameter("arm", target, blocking)
+		elif type(target) is list:
+			if len(target) == self.DOF:
+				return self.actions.move_arm_joint_direct("arm", target, blocking)
+			#if len(target) == 3:
+				#return self.actions.move_arm_cart_direct("arm", target, blocking)
+			elif len(target) == 4:
+				return self.actions.move_arm_cartesian_sample_rpy_direct("arm", target, blocking)
+			#else:
+				#rospy.loginfo("parameter <<%s>> is not in the right format", target)
+		
+		elif type(target) is PoseStamped:
+			return self.actions.move_arm_cartesian_planned("arm", target, blocking)
+			#rospy.logerr("not implemented yet")
 
 """
 def move(self,component_name,parameter_name,blocking=True, mode=None):
@@ -132,7 +144,7 @@ class CObMoveBase(AbstractAction):
 	def execute(self, parameter_name, blocking=True, mode=''):
 		component_name = 'base'
 
-		ah = action_handle("move", component_name, parameter_name, blocking)
+		ah = ActionHandle("move", component_name, parameter_name, blocking)
 		if(self.parse):
 			return ah
 		else:
@@ -245,7 +257,7 @@ class CObMoveTraj(AbstractAction):
 		self.ns_global_prefix = '/script_server'
 		
 	def execute(self,component_name,parameter_name,blocking):
-		ah = action_handle("move", component_name, parameter_name, blocking)
+		ah = ActionHandle("move", component_name, parameter_name, blocking)
 		
 		rospy.loginfo("Move <<%s>> to <<%s>>",component_name,parameter_name)
 		
@@ -383,7 +395,7 @@ class CObMoveJointGoalPlanned(AbstractAction):
 		self.actions = actions
 
 	def execute(self, component_name, parameter_name, blocking=True):
-		ah = action_handle("move_joint_goal_planned", component_name, parameter_name, blocking)
+		ah = ActionHandle("move_joint_goal_planned", component_name, parameter_name, blocking)
 		
 		if component_name != "arm":
 			rospy.logerr("Only arm component is supported in move_joint_goal_planned.")
@@ -496,17 +508,45 @@ class CObMoveJointGoalPlanned(AbstractAction):
 
 	
 
-class CObMovePlanned(CObMoveJointGoalPlanned):
+class CObMoveArmCartesianPlanned(AbstractAction):
 	# this class appears to be just a wrapper
-	action_name = 'move_planned'
-			
+	action_name = 'move_arm_cartesian_planned'
+	
+	def __init__(self, actions):
+		self.actions = actions
+
+	def execute(self, component_name, target=PoseStamped(), blocking=True):
+		ah = ActionHandle("move_arm_cartesian_planned", component_name, target, blocking)
+
+		rospy.loginfo("Move <<%s>> CARTESIAN PLANNED", component_name)
+
+		mp = MotionPlan()
+		mp += MoveArm("arm",[target,['sdh_grasp_link']])
+		
+		planning_res = mp.plan(2)
+		print planning_res
+
+		if planning_res.success:
+			for e in mp.execute():
+				exec_res = e.wait()
+				print exec_res
+				if not exec_res.success:
+					rospy.logerr("Execution of MotionExecutable %s failed", e.name)
+					ah.set_failed(3)
+					break
+		else:
+			rospy.logerr("Planning failed")
+			ah.set_failed(3)
+
+		return ah
+
 
 class CObMoveConstrainedPlanned(AbstractAction):
 	action_name = "move_constrained_planned"
 	
 	def execute(self, component_name, parameter_name, blocking=True, ah=None):
 		if ah is None:
-			ah = action_handle("move_constrained_planned", component_name, "constraint_goal", blocking, self.parse)
+			ah = ActionHandle("move_constrained_planned", component_name, "constraint_goal", blocking, self.parse)
 			if(self.parse):
 				return ah
 			else:
@@ -567,7 +607,7 @@ class CObMoveBase(AbstractAction):
 	action_name = "move_base_rel"
 	
 	def execute(self, component_name, parameter_name=[0,0,0], blocking=True):	
-		ah = action_handle("move_base_rel", component_name, parameter_name, blocking, self.parse)
+		ah = ActionHandle("move_base_rel", component_name, parameter_name, blocking, self.parse)
 		if(self.parse):
 			return ah
 		else:
@@ -662,7 +702,7 @@ class CObSetLights(AbstractAction):
 		self.actions = actions
 	
 	def execute(self,parameter_name,blocking=False):
-		ah = action_handle("set", "light", parameter_name, blocking, self.parse)
+		ah = ActionHandle("set", "light", parameter_name, blocking, self.parse)
 		if(self.parse):
 			return ah
 		else:
