@@ -9,7 +9,7 @@
 
 from action_cmdr.abstract_action import AbstractAction
 from action_cmdr.action_handle import ActionHandle
-from raw_arm_navigation.msg import MoveToJointConfigurationGoal, MoveToJointConfigurationAction, MoveToCartesianPoseAction
+from raw_arm_navigation.msg import MoveToJointConfigurationGoal, MoveToJointConfigurationAction, MoveToCartesianPoseGoal, MoveToCartesianPoseAction
 from brics_actuator.msg import JointValue
 
 import roslib
@@ -43,6 +43,7 @@ class TestAction(AbstractAction):
 
 class YouBotMoveArmAction(AbstractAction):
     action_name = "move_arm"
+    DOF = 5
     
     def __init__(self, actions):
         self.actions = actions
@@ -51,12 +52,12 @@ class YouBotMoveArmAction(AbstractAction):
         if type(target) is str:
             return self.actions.move_arm_joint_parameter("arm", target, blocking)
         elif type(target) is list:
-            if len(target) == DOF:
+            if len(target) == self.DOF:
                 return self.actions.move_arm_joint_direct("arm", target, blocking)
             #if len(target) == 3:
                 #return self.actions.move_arm_cart_direct("arm", target, blocking)
             elif len(target) == 4:
-                return self.actions.move_arm_cart_sample_rpy_direct(component_name, target, blocking)
+                return self.actions.move_arm_cart_sample_rpy_direct("arm", target, blocking)
             #else:
                 #rospy.loginfo("parameter <<%s>> is not in the right format", target)        
         
@@ -291,7 +292,7 @@ class YouBotMoveArmCartSampleRPYDirect(AbstractAction):
 
     def __init__(self, actions):
         self.actions = actions
-        self.action_server_name = self.action_server_name_prefix + "/MoveToCartesianPoseDirect" #TODO: Get from somewhere else
+        self.action_server_name = self.action_server_name_prefix + "/MoveToCartesianRPYSampledDirect" #TODO: Get from somewhere else
         self.client = actionlib.SimpleActionClient(self.action_server_name, MoveToCartesianPoseAction)
         
     def execute(self, component_name, target=[0, 0, 0, "/base_link"], blocking=True):
@@ -299,58 +300,50 @@ class YouBotMoveArmCartSampleRPYDirect(AbstractAction):
 
         rospy.loginfo("Move <<%s>> DIRECT to <<%s>>", component_name, target)
 
-        # get pose from parameter server
-        if type(target) is str:
-            rospy.logerr("parameter must be a 4DOF array")
-            ah.set_failed(2)
-            return ah
-        else:
-            param = target
-
-        # check pose
-        if not type(param) is list: # check outer list
-            rospy.logerr("no valid parameter for %s: not a list, aborting...", component_name)
-            print "parameter is:", param
-            ah.set_failed(3)
-            return ah
-        else:
-            #print i,"type1 = ", type(i)
-            DOF = 4
-            if not len(param) == DOF: # check dimension
-                rospy.logerr("no valid parameter for %s: dimension should be %d and is %d, aborting...", component_name, DOF, len(param))
-                print "parameter is:", param
-                ah.set_failed(3)
-                return ah
-            else:
-                for i in param:
-                    #print i,"type2 = ", type(i)
-                    if i < (DOF - 1):
-                        if not ((type(i) is float) or (type(i) is int)): # check type
-                            #print type(i)
-                            rospy.logerr("no valid parameter for %s: not a list of float or int (1-6), aborting...", component_name)
-                            print "parameter is:", param
-                            ah.set_failed(3)
-                            return ah
-                        else:
-                            rospy.logdebug("accepted parameter %f for %s", i, component_name)
-                    elif i == DOF:
-                        if not (type(i) is string): # check type
-                            #print type(i)
-                            rospy.logerr("no valid parameter for %s: last parameter is not a string, aborting...", component_name)
-                            print "parameter is:", param
-                            ah.set_failed(3)
-                            return ah
-                        else:
-                            rospy.logdebug("accepted parameter %f for %s", i, component_name)
+        ## check pose
+        #if not type(target) is list: # check outer list
+            #rospy.logerr("no valid parameter for %s: not a list, aborting...", component_name)
+            #print "parameter is:", param
+            #ah.set_failed(3)
+            #return ah
+        #else:
+            ##print i,"type1 = ", type(i)
+            #DOF = 4
+            #if not len(param) == DOF: # check dimension
+                #rospy.logerr("no valid parameter for %s: dimension should be %d and is %d, aborting...", component_name, DOF, len(param))
+                #print "parameter is:", param
+                #ah.set_failed(3)
+                #return ah
+            #else:
+                #for i in param:
+                    ##print i,"type2 = ", type(i)
+                    #if i < (DOF - 1):
+                        #if not ((type(i) is float) or (type(i) is int)): # check type
+                            ##print type(i)
+                            #rospy.logerr("no valid parameter for %s: not a list of float or int (1-6), aborting...", component_name)
+                            #print "parameter is:", param
+                            #ah.set_failed(3)
+                            #return ah
+                        #else:
+                            #rospy.logdebug("accepted parameter %f for %s", i, component_name)
+                    #elif i == DOF:
+                        #if not (type(i) is string): # check type
+                            ##print type(i)
+                            #rospy.logerr("no valid parameter for %s: last parameter is not a string, aborting...", component_name)
+                            #print "parameter is:", param
+                            #ah.set_failed(3)
+                            #return ah
+                        #else:
+                            #rospy.logdebug("accepted parameter %f for %s", i, component_name)
 
         # convert to pose message
-        pose = raw_arm_navigation.msg.MoveToCartesianPoseGoal()
+        pose = MoveToCartesianPoseGoal()
         pose.goal.header.stamp = rospy.Time.now()
-        pose.goal.header.frame_id = param[3]
+        pose.goal.header.frame_id = target[3]
 
-        pose.goal.pose.position.x = param[0]
-        pose.goal.pose.position.y = param[1]
-        pose.goal.pose.position.z = param[2]
+        pose.goal.pose.position.x = target[0]
+        pose.goal.pose.position.y = target[1]
+        pose.goal.pose.position.z = target[2]
 
         (qx, qy, qz, qw) = tf.transformations.quaternion_from_euler(0,0,0)
         pose.goal.pose.orientation.x = qx
@@ -369,8 +362,8 @@ class YouBotMoveArmCartSampleRPYDirect(AbstractAction):
         else:
             rospy.logdebug("%s action server ready", self.action_server_name)
 
-        client.send_goal(pose)
-        ah.set_client(client)
+        self.client.send_goal(pose)
+        ah.set_client(self.client)
         ah.wait_inside()
 
         return ah
