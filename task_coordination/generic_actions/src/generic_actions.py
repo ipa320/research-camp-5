@@ -9,17 +9,15 @@
 
 from action_cmdr.abstract_action import AbstractAction
 from action_cmdr.action_handle import ActionHandle
-from raw_arm_navigation.msg import MoveToJointConfigurationGoal, MoveToJointConfigurationAction, MoveToCartesianPoseGoal, MoveToCartesianPoseAction
-from brics_actuator.msg import JointValue
-from geometry_msgs.msg import PoseStamped
-from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
 
 import roslib
-roslib.load_manifest('youbot_actions')
+roslib.load_manifest('generic_actions')
 import rospy
 import actionlib
 import tf
 
+from trajectory_msgs.msg import JointTrajectory,JointTrajectoryPoint
+from control_msgs.msg import FollowJointTrajectoryAction,FollowJointTrajectoryGoal
 
 #------------------- Move section -------------------#
 ## Deals with all kind of movements for different components.
@@ -31,6 +29,7 @@ import tf
 
 class MoveTrajectoryAction(AbstractAction):
 	action_name = "move_joint_trajectory"
+	ns_global_prefix = "/script_server"
 
 	def __init__(self, actions):
 		self.actions = actions
