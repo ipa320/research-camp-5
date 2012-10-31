@@ -1,13 +1,14 @@
 #!/usr/bin/python
+PKG = 'raw_generic_states'
 import roslib
-roslib.load_manifest('raw_generic_states')
+roslib.load_manifest(PKG)
 
 import rospy
 import smach
 import smach_ros
 
-from simple_script_server import *
-sss = simple_script_server()
+import action_cmdr
+action_cmdr.init(PKG)
 
 class init_robot(smach.State):
 
@@ -17,10 +18,10 @@ class init_robot(smach.State):
     def execute(self, userdata):
         
         # init arm
-        arm_to_init = sss.move("arm", "initposition")
+        arm_to_init = action_cmdr.move("arm", "initposition")
         
         #init gripper
-        gripper_open = sss.move("gripper", "open")
+        gripper_open = action_cmdr.move("gripper", "open")
                        
         rospy.loginfo("robot initialized")
         

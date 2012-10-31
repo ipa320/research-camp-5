@@ -1,15 +1,15 @@
 #!/usr/bin/python
+PKG = 'raw_generic_states'
 import roslib
-roslib.load_manifest('raw_generic_states')
+roslib.load_manifest(PKG)
 import rospy
 import smach
 import smach_ros
 import actionlib 
 import raw_base_placement.msg
 
-from simple_script_server import *
-sss = simple_script_server()
-
+import action_cmdr
+action_cmdr.init(PKG)
 
 class approach_pose(smach.State):
 
@@ -25,7 +25,7 @@ class approach_pose(smach.State):
         else:
 	    	self.pose2 = self.pose 
         
-        handle_base = sss.move("base", self.pose2)
+        handle_base = action_cmdr.move("base", self.pose2)
 
         while True:                
             rospy.sleep(0.1)
