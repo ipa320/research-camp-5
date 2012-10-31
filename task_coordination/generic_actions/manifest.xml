@@ -1,7 +1,7 @@
 <package>
-  <description brief="script_server_generic">
+  <description brief="generic_actions">
 
-     script_server_generic
+     generic_actions
 
   </description>
   <author>Florian Weisshardt</author>
@@ -9,7 +9,14 @@
   <review status="unreviewed" notes=""/>
   <url>http://ros.org/wiki/script_server_generic</url>
 
-  <depend package="script_server_core" />
+  <depend package="action_cmdr" />
+  <depend package="trajectory_msgs" />
+  <depend package="control_msgs" />
+
+  <export>
+    <actions action-modules="generic_actions" platform="cob3-3" />
+  </export>
+ 
 
 </package>
 
