@@ -28,7 +28,7 @@
   <depend package="rostest"/>
   
   <export>
-    <cpp cflags="-I${prefix}/msg/cpp"/>
+    <actions action-modules="cob_actions" platform="cob3-3" />
   </export>
  
 </package>
