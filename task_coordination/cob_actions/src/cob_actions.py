@@ -64,11 +64,12 @@ from geometry_msgs.msg import PoseStamped
 from control_msgs.msg import FollowJointTrajectoryAction, FollowJointTrajectoryGoal
 from cob_arm_navigation_python.MotionPlan import MotionPlan
 from cob_arm_navigation_python.MoveArm import MoveArm
+from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
 
 import roslib
 roslib.load_manifest('cob_actions')
 import action_cmdr
-action_cmdr.init("action_cmdr")
+action_cmdr.init("generic_actions")
 import rospy
 import actionlib
 import tf
@@ -100,11 +101,14 @@ class TestAction(AbstractAction):
 # \param blocking Bool value to specify blocking behaviour.
 
 class CObMoveGripperJoint(AbstractAction):
-    action_name = "move_gripper"
-    action_server_name_prefix = "/script_server"
+	action_name = "move_gripper"
+	action_server_name_prefix = "/script_server"
 
-    def execute(self, target="", blocking=True):
-        return action_cmdr.move_joint_trajectory("sdh", "/sdh_controller/follow_joint_trajectory", target, blocking)
+	def __init__(self, actions):
+		self.actions = actions
+
+	def execute(self, target="", blocking=True):
+		return self.actions.move_joint_trajectory("sdh", "/sdh_controller/follow_joint_trajectory", target, blocking)
 
 
 class CObMoveArmAction(AbstractAction):
@@ -147,6 +151,7 @@ def move(self, component_name, parameter_name, blocking=True, mode=None):
 
 class CObMoveBase(AbstractAction):
 	action_name = 'move_base'
+	ns_global_prefix = "/script_server"
 
 	def __init__(self, actions):
 		self.actions = actions
@@ -155,10 +160,6 @@ class CObMoveBase(AbstractAction):
 		component_name = 'base'
 
 		ah = ActionHandle("move", component_name, parameter_name, blocking)
-		if(self.parse):
-			return ah
-		else:
-			ah.set_active()
 		
 		if(mode == None or mode == ""):
 			rospy.loginfo("Move <<%s>> to <<%s>>",component_name,parameter_name)
@@ -208,7 +209,7 @@ class CObMoveBase(AbstractAction):
 		pose.pose.position.x = param[0]
 		pose.pose.position.y = param[1]
 		pose.pose.position.z = 0.0
-		q = quaternion_from_euler(0, 0, param[2])
+		q = tf.transformations.quaternion_from_euler(0, 0, param[2])
 		pose.pose.orientation.x = q[0]
 		pose.pose.orientation.y = q[1]
 		pose.pose.orientation.z = q[2]
@@ -230,7 +231,7 @@ class CObMoveBase(AbstractAction):
 			return ah
 		
 		rospy.logdebug("calling %s action server",action_server_name)
-		client = actionlib.SimpleActionClient(action_server_name, MoveAbstractAction)
+		client = actionlib.SimpleActionClient(action_server_name, MoveBaseAction)
 		# trying to connect to server
 		rospy.logdebug("waiting for %s action server to start",action_server_name)
 		if not client.wait_for_server(rospy.Duration(5)):
@@ -647,7 +648,7 @@ class CObMoveConstrainedPlanned(AbstractAction):
 # \param blocking Bool value to specify blocking behaviour.
 # 
 # # throws error code 3 in case of invalid parameter_name vector 
-class CObMoveBase(AbstractAction):
+class CObMoveBaseRel(AbstractAction):
 	action_name = "move_base_rel"
 	
 	def execute(self, component_name, parameter_name=[0,0,0], blocking=True):	
