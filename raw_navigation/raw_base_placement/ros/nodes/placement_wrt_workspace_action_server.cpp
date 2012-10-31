@@ -14,9 +14,12 @@
 
 using namespace raw_base_placement;
 
-
+#define TARGET_DISTANCE 0.5
+#define MAX_VELOCITY 0.1
+#define KP_APPROACH 0.5
 
 class OrientToLaserReadingAction {
+
 protected:
 	ros::NodeHandle nh_;
 	actionlib::SimpleActionServer<OrientToBaseAction> as_;
@@ -44,13 +47,13 @@ public:
 
 		nh_ = nh;
 
-		target_distance = 0.05;
-		max_velocity = 0.1;
+		target_distance = TARGET_DISTANCE;
+		max_velocity = MAX_VELOCITY;
 
 		
 		ROS_INFO("Register publisher");
 
-		cmd_pub = nh_.advertise<geometry_msgs::Twist>(cmd_vel_topic, 1000);
+		cmd_pub = nh_.advertise<geometry_msgs::Twist>(cmd_vel_topic, 1000); // 1000-element buffer for publisher
 
 		ROS_INFO("Create service clinet");
 
@@ -61,7 +64,7 @@ public:
 	}
 
 
-
+	
 	geometry_msgs::Twist calculateVelocityCommand(double center, double a, double b,bool &oriented,int &iterator) {
 		geometry_msgs::Twist cmd;
 
@@ -90,7 +93,7 @@ public:
             
             oriented = true; 
 			//cmd.linear.x = a / 3;
-			cmd.linear.x = (a - target_distance)/2;
+			cmd.linear.x = KP_APPROACH * (a - target_distance);
             cmd.angular.z = 0;
 			std::cout << "cmd.linear.x:  " << cmd.linear.x << std::endl;
 			//cmd_pub.publish(cmd);
@@ -99,7 +102,7 @@ public:
         else if(a < target_distance)
         {
       
-           cmd.linear.x = -(target_distance-a)/2;
+           cmd.linear.x = -KP_APPROACH * (target_distance-a);
            cmd.angular.z = 0;
            std::cout << "cmd.linear.x:  " << cmd.linear.x << std::endl; 
            if(iterator<6)
@@ -112,6 +115,7 @@ public:
            }
         }
 
+		// saturation
 		if (cmd.linear.x > max_velocity) 
 			cmd.linear.x = max_velocity;
 		else if (cmd.linear.x < -max_velocity) 
@@ -158,7 +162,7 @@ public:
         bool oriented = false;
         int  iterator = 0;
 
-		while (true) {
+		while (ros::ok()) {
 			ROS_INFO("Call service Client");
 
 			if(client.call(srv)) {
