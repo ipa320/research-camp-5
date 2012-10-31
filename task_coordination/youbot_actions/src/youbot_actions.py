@@ -9,7 +9,7 @@
 
 from action_cmdr.abstract_action import AbstractAction
 from action_cmdr.action_handle import ActionHandle
-from raw_arm_navigation.msg import MoveToJointConfigurationGoal, MoveToJointConfigurationAction, MoveToCartesianPoseGoal, MoveToCartesianPoseAction
+from raw_arm_navigation.msg import MoveToJointConfigurationGoal, MoveToJointConfigurationAction, MoveToCartesianPoseGoal, MoveToCartesianPoseAction, MoveToJointConfigurationGoal
 from brics_actuator.msg import JointValue
 from geometry_msgs.msg import PoseStamped
 from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
@@ -231,7 +231,7 @@ class YouBotMoveArmJointDirect(AbstractAction):
     #action_name = "move_arm_cart_direct"
 
     #def execute(self, component_name, target=[0,0,0, "/base_link"], blocking=True):
-        #ah = action_handle("move_arm_cart_direct", component_name, target, blocking, self.parse)
+        #ah = ActionHandle("move_arm_cart_direct", component_name, target, blocking, self.parse)
         #if(self.parse):
             #return ah
         #else:
@@ -287,7 +287,6 @@ class YouBotMoveArmJointDirect(AbstractAction):
         #ah.wait_inside()
 
         #return ah
-
 
 class YouBotMoveArmCartSampleRPYDirect(AbstractAction):
     action_name = "move_arm_cart_sample_rpy_direct"
@@ -348,86 +347,90 @@ class YouBotMoveArmCartSampleRPYDirect(AbstractAction):
         return ah
     
 
-#class YouBotMoveGripperJoint(AbstractAction):
-    #action_name = "move_gripper_joint"
+class YouBotMoveArmCartesian(YouBotMoveArmCartSampleRPYDirect):
+	action_name = 'move_arm_cartesian'
 
-    #def execute(self, component_name, target="", blocking=True):
-        #ah = action_handle("move_gripper", component_name, target, blocking, self.parse)
-        #if(self.parse):
-            #return ah
-        #else:
-            #ah.set_active()
+class YouBotMoveGripperJoint(AbstractAction):
+    action_name = "move_gripper"
+    action_server_name_prefix = "/script_server"
+    gripper1_joint_names = ["gripper_finger_joint_l", "gripper_finger_joint_r"]
 
-        #rospy.loginfo("Move <<%s>> to <<%s>>", component_name, target)
+    def execute(self, target="", blocking=True):
+        component_name = "gripper"
+        ah = ActionHandle("move_gripper", component_name, target, blocking)
+		
+        rospy.loginfo("Move <<%s>> to <<%s>>", component_name, target)
 
-        ## get pose from parameter server
-        #if type(target) is str:
-            #if not rospy.has_param(self.ns_global_prefix + "/" + component_name + "/" + target):
-                #rospy.logerr("parameter %s does not exist on ROS Parameter Server, aborting...", self.ns_global_prefix + "/" + component_name + "/" + target)
-                #ah.set_failed(2)
-                #return ah
-            #param = rospy.get_param(self.ns_global_prefix + "/" + component_name + "/" + target)
-        #else:
-            #param = target
+        # get pose from parameter server
+        if type(target) is str:
+            if not rospy.has_param(self.action_server_name_prefix + "/" + component_name + "/" + target):
+                rospy.logerr("parameter %s does not exist on ROS Parameter Server, aborting...", self.action_server_name_prefix + "/" + component_name + "/" + target)
+                ah.set_failed(2)
+                return ah
+            param = rospy.get_param(self.action_server_name_prefix + "/" + component_name + "/" + target)
+        else:
+            param = target
 
-        ## check pose
-        #if not type(param) is list: # check outer list
-            #rospy.logerr("no valid parameter for %s: not a list, aborting...", component_name)
-            #print "parameter is:", param
-            #ah.set_failed(3)
-            #return ah
-        #else:
-            ##print i,"type1 = ", type(i)
-            #DOF = 2
-            #if not len(param) == DOF: # check dimension
-                #rospy.logerr("no valid parameter for %s: dimension should be %d and is %d, aborting...", component_name, DOF, len(param))
-                #print "parameter is:", param
-                #ah.set_failed(3)
-                #return ah
-            #else:
-                #for i in param:
-                    ##print i,"type2 = ", type(i)
-                    #if not ((type(i) is float) or (type(i) is int)): # check type
-                        ##print type(i)
-                        #rospy.logerr("no valid parameter for %s: not a list of float or int, aborting...", component_name)
-                        #print "parameter is:", param
-                        #ah.set_failed(3)
-                        #return ah
-                    #else:
-                        #rospy.logdebug("accepted parameter %f for %s", i, component_name)
+        # check pose
+        """
+	if not type(param) is list:  # check outer list
+            rospy.logerr("no valid parameter for %s: not a list, aborting...", component_name)
+            print "parameter is:", param
+            ah.set_failed(3)
+            return ah
+        else:
+            print i,"type1 = ", type(i)
+            DOF = 2
+            if not len(param) == DOF:  # check dimension
+                rospy.logerr("no valid parameter for %s: dimension should be %d and is %d, aborting...", component_name, DOF, len(param))
+                print "parameter is:", param
+                ah.set_failed(3)
+                return ah
+            else:
+                for i in param:
+                    print i,"type2 = ", type(i)
+                    if not ((type(i) is float) or (type(i) is int)): # check type
+                        print type(i)
+                        rospy.logerr("no valid parameter for %s: not a list of float or int, aborting...", component_name)
+                        print "parameter is:", param
+                        ah.set_failed(3)
+                        return ah
+                    else:
+                        rospy.logdebug("accepted parameter %f for %s", i, component_name)
+	"""
+
+        pose_goal = MoveToJointConfigurationGoal()
+
+        DOF = 2
+        for i in range(DOF):
+            jv = JointValue()
+            jv.joint_uri = self.gripper1_joint_names[i]
+            jv.value = param[i]
+            jv.unit = "m"
+            pose_goal.goal.positions.append(jv)
+
+        action_server_name = "/arm_1/gripper_controller/MoveToJointConfigurationDirect"
+
+        rospy.logdebug("calling %s action server", action_server_name)
+        client = actionlib.SimpleActionClient(action_server_name, MoveToJointConfigurationAction)
+        # trying to connect to server
+        rospy.logdebug("waiting for %s action server to start", action_server_name)
+        if not client.wait_for_server(rospy.Duration(5)):
+            # error: server did not respond
+            rospy.logerr("%s action server not ready within timeout, aborting...", action_server_name)
+            ah.set_failed(4)
+            return ah
+        else:
+            rospy.logdebug("%s action server ready", action_server_name)
 
 
-        #pose_goal = raw_arm_navigation.msg.MoveToJointConfigurationGoal()
+        print pose_goal 
+        client.send_goal(pose_goal)
+        ah.set_client(client)
 
-        #for i in range(DOF):
-            #jv = brics_actuator.msg.JointValue()
-            #jv.joint_uri = self.gripper1_joint_names[i]
-            #jv.value = param[i]
-            #jv.unit = "m"
-            #pose_goal.goal.positions.append(jv)
+        ah.wait_inside()
 
-        #action_server_name = "/arm_1/gripper_controller/MoveToJointConfigurationDirect"
-
-        #rospy.logdebug("calling %s action server", action_server_name)
-        #client = actionlib.SimpleActionClient(action_server_name, MoveToJointConfigurationAction)
-        ## trying to connect to server
-        #rospy.logdebug("waiting for %s action server to start", action_server_name)
-        #if not client.wait_for_server(rospy.Duration(5)):
-            ## error: server did not respond
-            #rospy.logerr("%s action server not ready within timeout, aborting...", action_server_name)
-            #ah.set_failed(4)
-            #return ah
-        #else:
-            #rospy.logdebug("%s action server ready", action_server_name)
-
-
-        ##print client_goal
-        #client.send_goal(pose_goal)
-        #ah.set_client(client)
-
-        #ah.wait_inside()
-
-        #return ah
+        return ah
 
 
 
