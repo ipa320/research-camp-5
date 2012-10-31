@@ -25,7 +25,7 @@ class approach_pose(smach.State):
         else:
 	    	self.pose2 = self.pose 
         
-        handle_base = action_cmdr.move("base", self.pose2)
+        handle_base = action_cmdr.move_base(self.pose2)
 
         while True:                
             rospy.sleep(0.1)
