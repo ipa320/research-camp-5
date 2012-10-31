@@ -50,7 +50,7 @@ class YouBotMoveArmAction(AbstractAction):
     def __init__(self, actions):
         self.actions = actions
 
-    def execute(self, target, blocking = True):
+    def execute(self, target, blocking=True):
         if type(target) is str:
             return self.actions.move_arm_joint_parameter("arm", target, blocking)
         elif type(target) is list:
@@ -443,7 +443,7 @@ class YouBotMoveBaseAction(AbstractAction):
     # \param target Name of the parameter on the ROS parameter server.
     # \param blocking Bool value to specify blocking behaviour.
 
-    def execute(self, target, blocking = True):
+    def execute(self, target, blocking=True):
         component_name = "base"
         ah = ActionHandle("move_base", component_name, target, blocking)
             

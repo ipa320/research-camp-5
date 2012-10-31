@@ -114,7 +114,7 @@ class CObMoveAction(AbstractAction):
 			return self.actions.move_gripper_joint(component_name, parameter_name, blocking)
 
 """
-def move(self,component_name,parameter_name,blocking=True, mode=None):
+def move(self, component_name, parameter_name, blocking=True, mode=None):
 	if component_name == "base":
 		return self.move_base(component_name,parameter_name,blocking, mode)
 	elif component_name == "arm" and mode=="planned":
@@ -244,7 +244,7 @@ class CObMoveTraj(AbstractAction):
 		self.actions = actions
 		self.ns_global_prefix = '/script_server'
 		
-	def execute(self,component_name,parameter_name,blocking):
+	def execute(self, component_name, parameter_name, blocking=True):
 		ah = action_handle("move", component_name, parameter_name, blocking)
 		
 		rospy.loginfo("Move <<%s>> to <<%s>>",component_name,parameter_name)
@@ -634,7 +634,7 @@ class CObSetOperationMode(AbstractAction):
 	def __init__(self, actions):
 		self.actions = actions
 		
-	def execute(self,component_name,mode,blocking=True, planning=False):
+	def execute(self, component_name, mode, blocking=True, planning=False):
 		#rospy.loginfo("setting <<%s>> to operation mode <<%s>>",component_name, mode)
 		rospy.set_param("/" + component_name + "_controller/OperationMode",mode) # \todo TODO: remove and only use service call
 		#rospy.wait_for_service("/" + component_name + "_controller/set_operation_mode")
@@ -661,7 +661,7 @@ class CObSetLights(AbstractAction):
 	def __init__(self, actions):
 		self.actions = actions
 	
-	def execute(self,parameter_name,blocking=False):
+	def execute(self, parameter_name, blocking=True):
 		ah = action_handle("set", "light", parameter_name, blocking, self.parse)
 		if(self.parse):
 			return ah
