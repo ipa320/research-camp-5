@@ -106,8 +106,6 @@ class CObMoveAction(AbstractAction):
 	
 	def execute(self, component_name, parameter_name, blocking=True, mode=''):
 		 # note that mode arg is dropped, make sure propagated through YoubotMoveAction
-		if component_name == "base":
-			return self.actions.move_base(component_name, parameter_name, blocking)
 		elif component_name == "arm" and mode=="planned":
 			return self.actions.move_planned(compoenent_name, parameter_name, blocking)
 		elif component_name == "arm": 
@@ -124,17 +122,15 @@ def move(self,component_name,parameter_name,blocking=True, mode=None):
 	else:
 		return self.move_traj(component_name,parameter_name,blocking)
 """
-## Deals with movements of the base.
-#
-# A target will be sent to the actionlib interface of the move_base node.
-#
-class CObMoveAbstractAction(AbstractAction):
-	action_name = "move_base"
+
+class CObMoveBase(AbstractAction):
+	action_name = 'move_base'
 
 	def __init__(self, actions):
 		self.actions = actions
-	
-	def execute(self, component_name, parameter_name, blocking=True, mode=''):
+
+	def execute(self, parameter_name, blocking=True, mode=''):
+		component_name = 'base'
 
 		ah = action_handle("move", component_name, parameter_name, blocking)
 		if(self.parse):
