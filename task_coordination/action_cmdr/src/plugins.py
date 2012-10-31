@@ -96,6 +96,7 @@ def load_module(module_name, actions):
 
 
     for a in new_actions:
+        print a.action_name
         if a.action_name in actions:
             raise Exception("Action %s already exists" % a.action_name)
 
