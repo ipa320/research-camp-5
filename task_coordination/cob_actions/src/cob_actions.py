@@ -14,7 +14,7 @@
 # \note
 #   ROS stack name: task_coordination
 # \note
-#   ROS package name: script_server_cob
+#   ROS package name: cob_actions
 #
 # \author
 #   Author: Florian Weisshardt, email:florian.weisshardt@ipa.fhg.de
@@ -24,7 +24,7 @@
 # \date Date of creation: Aug 2010
 #
 # \brief
-#   Implements script server functionalities.
+#   Implements action functionalities.
 #
 #################################################################
 #
@@ -57,7 +57,7 @@
 #
 #################################################################
 
-from action_cmdr.base_aciton import BaseAction
+from action_cmdr.basic_action import BasicAction as BaseAction
 
 import roslib
 roslib.load_manifest('cob_actions')
@@ -69,7 +69,7 @@ class PrintAction(BaseAction):
 	action_name = 'printit'
 	
 	def execute(self, what_to_print):
-		print("YES! %s" $ what_to_print)
+		print("YES! %s" % what_to_print)
 
 class TestAction(BaseAction):
 	action_name = "test"
@@ -101,7 +101,7 @@ class CObMoveAction(BaseAction):
 	# \param parameter_name Name of the parameter on the ROS parameter server.	
 	# \param blocking Bool value to specify blocking behaviour.
 	
-	def execute(self, component_name, parameter_name, blocking=True, mode):
+	def execute(self, component_name, parameter_name, blocking=True, mode=''):
 		 # note that mode arg is dropped, make sure propagated through YoubotMoveAction
 		if component_name == "base":
 			return self.actions.move_base(component_name, paramter_name, blocking)
@@ -128,14 +128,14 @@ def move(self,component_name,parameter_name,blocking=True, mode=None):
 class CObMoveBaseAction(BaseAction):
 	action_name = "move_base"
 	
-	def execute(self, component_name, parameter_name, blocking):
+	def execute(self, component_name, parameter_name, blocking=True, mode=''):
 
 		ah = action_handle("move", component_name, parameter_name, blocking, self.parse)
 		if(self.parse):
 			return ah
 		else:
 			ah.set_active()
-		/C
+		
 		if(mode == None or mode == ""):
 			rospy.loginfo("Move <<%s>> to <<%s>>",component_name,parameter_name)
 		else:
@@ -640,19 +640,19 @@ class CObSetOperationMode(BaseAction):
 		self.actions = actions
 		
 	def execute(self,component_name,mode,blocking=True, planning=False):
-	#rospy.loginfo("setting <<%s>> to operation mode <<%s>>",component_name, mode)
-	rospy.set_param("/" + component_name + "_controller/OperationMode",mode) # \todo TODO: remove and only use service call
-	#rospy.wait_for_service("/" + component_name + "_controller/set_operation_mode")
-	try:
-		set_operation_mode = rospy.ServiceProxy("/" + component_name + "_controller/set_operation_mode", SetOperationMode)
-		req = SetOperationModeRequest()
-		req.operation_mode.data = mode
-		#print req
-		resp = set_operation_mode(req)
-		resp = set_operation_mode(req)
-		#print resp
-	except rospy.ServiceException, e:
-		print "Service call failed: %s"%e
+		#rospy.loginfo("setting <<%s>> to operation mode <<%s>>",component_name, mode)
+		rospy.set_param("/" + component_name + "_controller/OperationMode",mode) # \todo TODO: remove and only use service call
+		#rospy.wait_for_service("/" + component_name + "_controller/set_operation_mode")
+		try:
+			set_operation_mode = rospy.ServiceProxy("/" + component_name + "_controller/set_operation_mode", SetOperationMode)
+			req = SetOperationModeRequest()
+			req.operation_mode.data = mode
+			#print req
+			resp = set_operation_mode(req)
+			resp = set_operation_mode(req)
+			#print resp
+		except rospy.ServiceException, e:
+			print "Service call failed: %s"%e
 	
 #------------------- LED section -------------------#
 ## Set the color of the cob_light component.
@@ -660,58 +660,64 @@ class CObSetOperationMode(BaseAction):
 # The color is given by a parameter on the parameter server.
 #
 # \param parameter_name Name of the parameter on the parameter server which holds the rgb values.
-def set_light(self,parameter_name,blocking=False):
-	ah = action_handle("set", "light", parameter_name, blocking, self.parse)
-	if(self.parse):
-		return ah
-	else:
-		ah.set_active(mode="topic")
-
-	rospy.loginfo("Set light to <<%s>>",parameter_name)
+class CObSetLights(BaseAction):
+	action_name = 'set_lights'
 	
-	# get joint values from parameter server
-	if type(parameter_name) is str:
-		if not rospy.has_param(self.ns_global_prefix + "/light/" + parameter_name):
-			rospy.logerr("parameter %s does not exist on ROS Parameter Server, aborting...",self.ns_global_prefix + "/light/" + parameter_name)
-			return 2
-		param = rospy.get_param(self.ns_global_prefix + "/light/" + parameter_name)
-	else:
-		param = parameter_name
+	def __init__(self, actions):
+		self.actions = actions
+	
+	def execute(self,parameter_name,blocking=False):
+		ah = action_handle("set", "light", parameter_name, blocking, self.parse)
+		if(self.parse):
+			return ah
+		else:
+			ah.set_active(mode="topic")
+
+		rospy.loginfo("Set light to <<%s>>",parameter_name)
 		
-	# check color parameters
-	if not type(param) is list: # check outer list
-		rospy.logerr("no valid parameter for light: not a list, aborting...")
-		print "parameter is:",param
-		ah.error_code = 3
-		return ah
-	else:
-		if not len(param) == 3: # check dimension
-			rospy.logerr("no valid parameter for light: dimension should be 3 (r,g,b) and is %d, aborting...",len(param))
+		# get joint values from parameter server
+		if type(parameter_name) is str:
+			if not rospy.has_param(self.ns_global_prefix + "/light/" + parameter_name):
+				rospy.logerr("parameter %s does not exist on ROS Parameter Server, aborting...",self.ns_global_prefix + "/light/" + parameter_name)
+				return 2
+			param = rospy.get_param(self.ns_global_prefix + "/light/" + parameter_name)
+		else:
+			param = parameter_name
+			
+		# check color parameters
+		if not type(param) is list: # check outer list
+			rospy.logerr("no valid parameter for light: not a list, aborting...")
 			print "parameter is:",param
 			ah.error_code = 3
 			return ah
 		else:
-			for i in param:
-				#print i,"type1 = ", type(i)
-				if not ((type(i) is float) or (type(i) is int)): # check type
-					#print type(i)
-					rospy.logerr("no valid parameter for light: not a list of float or int, aborting...")
-					print "parameter is:",param
-					ah.error_code = 3
-					return ah
-				else:
-					rospy.logdebug("accepted parameter %f for light",i)
-	
-	# convert to ColorRGBA message
-	color = ColorRGBA()
-	color.r = param[0]
-	color.g = param[1]
-	color.b = param[2]
-	color.a = 1 # Transparency
+			if not len(param) == 3: # check dimension
+				rospy.logerr("no valid parameter for light: dimension should be 3 (r,g,b) and is %d, aborting...",len(param))
+				print "parameter is:",param
+				ah.error_code = 3
+				return ah
+			else:
+				for i in param:
+					#print i,"type1 = ", type(i)
+					if not ((type(i) is float) or (type(i) is int)): # check type
+						#print type(i)
+						rospy.logerr("no valid parameter for light: not a list of float or int, aborting...")
+						print "parameter is:",param
+						ah.error_code = 3
+						return ah
+					else:
+						rospy.logdebug("accepted parameter %f for light",i)
+		
+		# convert to ColorRGBA message
+		color = ColorRGBA()
+		color.r = param[0]
+		color.g = param[1]
+		color.b = param[2]
+		color.a = 1 # Transparency
 
-	# publish color		
-	self.pub_light.publish(color)
-	
-	ah.set_succeeded()
-	ah.error_code = 0
-	return ah
+		# publish color		
+		self.pub_light.publish(color)
+		
+		ah.set_succeeded()
+		ah.error_code = 0
+		return ah
