@@ -64,7 +64,8 @@ class YouBotMoveArmAction(AbstractAction):
                 #rospy.loginfo("parameter <<%s>> is not in the right format", target)        
         
         elif type(target) is PoseStamped:
-            rospy.logerr("not implemented yet")
+            return self.actions.move_arm_cart_sample_rpy_direct("arm", [target.pose.position.x, target.pose.position.y, target.pose.position.z, target.header.frame_id], blocking)
+            #rospy.logerr("not implemented yet")
 
         #return self.actions.move_arm_direct("arm", target, blocking)
 
