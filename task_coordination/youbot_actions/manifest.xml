@@ -17,8 +17,7 @@
   <depend package="geometry_msgs" />
   <depend package="move_base_msgs" />
   <export>
-    <scriptserver utils="script_server_youbot_utils.youbot_util"
-		  platform="youbot" />
+    <actions action-modules="youbot_actions" platform="youbot" />
   </export>
 </package>
 
