@@ -13,6 +13,7 @@
   <depend package="action_cmdr"/>
   <depend package="tf"/>
   <depend package="raw_arm_navigation" />
+  <depend package="brics_actuator" />
   <depend package="geometry_msgs" />
   <depend package="move_base_msgs" />
   <export>

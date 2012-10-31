@@ -76,7 +76,7 @@ import actionlib
 ## Action handle class.
 #
 # The action handle is used to implement asynchronous behaviour within the script.
-class action_handle:
+class ActionHandle:
 	## Initializes the action handle.
 	def __init__(self, function_name, component_name, parameter_name, blocking):
 		self.error_code = -1
