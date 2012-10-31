@@ -23,7 +23,7 @@
   <depend package="move_base_msgs"/>
   <depend package="arm_navigation_msgs"/>
   <depend package="cob_sound"/>
-  <depend package="script_server_core"/>
+  <depend package="action_cmdr"/>
 
   <depend package="rostest"/>
   

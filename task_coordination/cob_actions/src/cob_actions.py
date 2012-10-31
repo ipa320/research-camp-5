@@ -57,7 +57,10 @@
 #
 #################################################################
 
-from action_cmdr.basic_action import BasicAction as BaseAction
+from action_cmdr.abstract_action import AbstractAction
+from action_cmdr.action_handle import action_handle
+from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
+from control_msgs.msg import FollowJointTrajectoryAction, FollowJointTrajectoryGoal
 
 import roslib
 roslib.load_manifest('cob_actions')
@@ -65,13 +68,13 @@ import rospy
 import actionlib
 import tf
 
-class PrintAction(BaseAction):
+class PrintAction(AbstractAction):
 	action_name = 'printit'
 	
 	def execute(self, what_to_print):
 		print("YES! %s" % what_to_print)
 
-class TestAction(BaseAction):
+class TestAction(AbstractAction):
 	action_name = "test"
 	
 	def __init__(self, actions):
@@ -91,7 +94,7 @@ class TestAction(BaseAction):
 # \param parameter_name Name of the parameter on the ROS parameter server.
 # \param blocking Bool value to specify blocking behaviour.
 
-class CObMoveAction(BaseAction):
+class CObMoveAction(AbstractAction):
 	action_name = "move"
 
 	def __init__(self, actions):
@@ -104,11 +107,11 @@ class CObMoveAction(BaseAction):
 	def execute(self, component_name, parameter_name, blocking=True, mode=''):
 		 # note that mode arg is dropped, make sure propagated through YoubotMoveAction
 		if component_name == "base":
-			return self.actions.move_base(component_name, paramter_name, blocking)
+			return self.actions.move_base(component_name, parameter_name, blocking)
 		elif component_name == "arm" and mode=="planned":
 			return self.actions.move_planned(compoenent_name, parameter_name, blocking)
 		elif component_name == "arm": 
-			return self.actions.move_traj(component_name, paramter_name, blocking)
+			return self.actions.move_traj(component_name, parameter_name, blocking)
 		elif component_name == "gripper":
 			return self.actions.move_gripper_joint(component_name, parameter_name, blocking)
 
@@ -125,12 +128,15 @@ def move(self,component_name,parameter_name,blocking=True, mode=None):
 #
 # A target will be sent to the actionlib interface of the move_base node.
 #
-class CObMoveBaseAction(BaseAction):
+class CObMoveAbstractAction(AbstractAction):
 	action_name = "move_base"
+
+	def __init__(self, actions):
+		self.actions = actions
 	
 	def execute(self, component_name, parameter_name, blocking=True, mode=''):
 
-		ah = action_handle("move", component_name, parameter_name, blocking, self.parse)
+		ah = action_handle("move", component_name, parameter_name, blocking)
 		if(self.parse):
 			return ah
 		else:
@@ -206,7 +212,7 @@ class CObMoveBaseAction(BaseAction):
 			return ah
 		
 		rospy.logdebug("calling %s action server",action_server_name)
-		client = actionlib.SimpleActionClient(action_server_name, MoveBaseAction)
+		client = actionlib.SimpleActionClient(action_server_name, MoveAbstractAction)
 		# trying to connect to server
 		rospy.logdebug("waiting for %s action server to start",action_server_name)
 		if not client.wait_for_server(rospy.Duration(5)):
@@ -235,18 +241,15 @@ class CObMoveBaseAction(BaseAction):
 # \param component_name Name of the component.
 # \param parameter_name Name of the parameter on the ROS parameter server.
 # \param blocking Bool value to specify blocking behaviour.
-class CObMoveTraj(BaseAction):
+class CObMoveTraj(AbstractAction):
 	action_name = 'move_traj'
 	
 	def __init__(self, actions):
 		self.actions = actions
+		self.ns_global_prefix = '/script_server'
 		
 	def execute(self,component_name,parameter_name,blocking):
-		ah = action_handle("move", component_name, parameter_name, blocking, self.parse)
-		if(self.parse):
-			return ah
-		else:
-			ah.set_active()
+		ah = action_handle("move", component_name, parameter_name, blocking)
 		
 		rospy.loginfo("Move <<%s>> to <<%s>>",component_name,parameter_name)
 		
@@ -377,18 +380,14 @@ class CObMoveTraj(BaseAction):
 		return ah
 
 	
-class CObMoveJointGoalPlanned(BaseAction):
+class CObMoveJointGoalPlanned(AbstractAction):
 	action_name = 'move_joint_goal_planned'
 
 	def __init__(self, actions):
 		self.actions = actions
 
 	def execute(self, component_name, parameter_name, blocking=True):
-		ah = action_handle("move_joint_goal_planned", component_name, parameter_name, blocking, self.parse)
-		if(self.parse):
-			return ah
-		else:
-			ah.set_active()
+		ah = action_handle("move_joint_goal_planned", component_name, parameter_name, blocking)
 		
 		if component_name != "arm":
 			rospy.logerr("Only arm component is supported in move_joint_goal_planned.")
@@ -506,7 +505,7 @@ class CObMovePlanned(CObMoveJointGoalPlanned):
 	action_name = 'move_planned'
 			
 
-class CObMoveConstrainedPlanned(BaseAction):
+class CObMoveConstrainedPlanned(AbstractAction):
 	action_name = "move_constrained_planned"
 	
 	def execute(self, component_name, parameter_name, blocking=True, ah=None):
@@ -568,7 +567,7 @@ class CObMoveConstrainedPlanned(BaseAction):
 # \param blocking Bool value to specify blocking behaviour.
 # 
 # # throws error code 3 in case of invalid parameter_name vector 
-class CObMoveBase(BaseAction):
+class CObMoveBase(AbstractAction):
 	action_name = "move_base_rel"
 	
 	def execute(self, component_name, parameter_name=[0,0,0], blocking=True):	
@@ -633,7 +632,7 @@ class CObMoveBase(BaseAction):
 # \param component_name Name of the component.
 # \param mode Name of the operation mode to set.
 # \param blocking Service calls are always blocking. The parameter is only provided for compatibility with other functions.
-class CObSetOperationMode(BaseAction):
+class CObSetOperationMode(AbstractAction):
 	action_name = 'set_operation_mode'
 	
 	def __init__(self, actions):
@@ -660,7 +659,7 @@ class CObSetOperationMode(BaseAction):
 # The color is given by a parameter on the parameter server.
 #
 # \param parameter_name Name of the parameter on the parameter server which holds the rgb values.
-class CObSetLights(BaseAction):
+class CObSetLights(AbstractAction):
 	action_name = 'set_lights'
 	
 	def __init__(self, actions):
