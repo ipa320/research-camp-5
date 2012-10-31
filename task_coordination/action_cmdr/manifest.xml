@@ -9,6 +9,7 @@
   <url>http://ros.org/wiki/script_server_core</url>
 
   <depend package="rospy" />
+  <depend package="roslib" />
   <depend package="actionlib" />
 
 </package>
