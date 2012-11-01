@@ -156,6 +156,9 @@ class CObPreparePerception(AbstractAction):
         ah = action_cmdr.move_arm("look_at_table") 
         if ah.get_error_code() != 0:
             return ah
+        ah = action_cmdr.move_head(target="back", blocking=True)
+        if ah.get_error_code() != 0:
+            return ah
         return action_cmdr.move_torso(target="back", blocking=True)
 
 
