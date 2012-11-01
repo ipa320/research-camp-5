@@ -150,9 +150,13 @@ class CObPreparePerception(AbstractAction):
         self.actions = actions
         
     def execute(self, blocking=True):
-        action_cmdr.move_torso(target="back", blocking=True)
-        action_cmdr.move_tray(target="up", blocking=True)
-        return action_cmdr.move_arm("look_at_table")
+        ah = action_cmdr.move_tray(target="up", blocking=True)
+        if ah.get_error_code() != 0:
+            return ah
+        ah = action_cmdr.move_arm("look_at_table") 
+        if ah.get_error_code() != 0:
+            return ah
+        return action_cmdr.move_torso(target="back", blocking=True)
 
 
 class CObMoveArmAction(AbstractAction):
