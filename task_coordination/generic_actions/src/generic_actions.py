@@ -35,7 +35,7 @@ class PercieveObject(AbstractAction):
 
     def execute(self, wait_time=1, retries=10, blocking=True):
         self.actions.prepare_perception(blocking=True)
-        self.actions.execute_perception(wait_time, retries, blocking)
+        return self.actions.execute_perception(wait_time, retries, blocking)
 
 class PercieveAction(AbstractAction):
     action_name = "execute_perception"
