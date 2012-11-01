@@ -122,22 +122,29 @@ class CObMoveArmAction(AbstractAction):
 	# \param parameter_name Name of the parameter on the ROS parameter server.	
 	# \param blocking Bool value to specify blocking behaviour.
 	
-	def execute(self, target, blocking=True):
-		if type(target) is str:
-			return self.actions.move_arm_joint_planned("arm", target, blocking)
-		elif type(target) is list:
-			if len(target) == self.DOF:
-				return self.actions.move_arm_joint_direct("arm", target, blocking)
-			#if len(target) == 3:
-				#return self.actions.move_arm_cart_direct("arm", target, blocking)
-			elif len(target) == 4:
-				return self.actions.move_arm_cartesian_sample_rpy_direct("arm", target, blocking)
-			#else:
-				#rospy.loginfo("parameter <<%s>> is not in the right format", target)
+	def execute(self, target="", blocking=True, planned=False):
+		if planned == True:
+			if type(target) is PoseStamped:
+				return self.actions.move_arm_cartesian_planned("arm", target, blocking)
+			#elif type(target) is str:
+				#return self.actions.move_arm_joint_planned("arm", target, blocking)
+			else:
+				return self.actions.move_arm_joint_planned("arm", target, blocking)
+		else:
+			if type(target) is PoseStamped:
+				rospy.logerr("Not implemented yet!")
+			else:
+				return self.actions.move_joint_trajectory("arm", "/arm_controller/follow_joint_trajectory", target, blocking)
+			
+		#if type(target) is str:
+			#return self.actions.move_arm_joint_planned("arm", target, blocking)
+		#elif type(target) is list:
+			#if len(target) == self.DOF:
+				#return self.actions.move_arm_joint_direct("arm", target, blocking)
 		
-		elif type(target) is PoseStamped:
-			return self.actions.move_arm_cartesian_planned("arm", target, blocking)
-			#rospy.logerr("not implemented yet")
+		#elif type(target) is PoseStamped:
+			#return self.actions.move_arm_cartesian_planned("arm", target, blocking)
+			##rospy.logerr("not implemented yet")
 
 """
 def move(self, component_name, parameter_name, blocking=True, mode=None):
@@ -402,6 +409,8 @@ class CObMoveTraj(AbstractAction):
 class CObMoveArmJointGoalPlanned(AbstractAction):
 	# this class appears to be just a wrapper
 	action_name = 'move_arm_joint_planned'
+	ns_global_prefix = "/script_server"
+	DOF = 7
 	
 	def __init__(self, actions):
 		self.actions = actions
@@ -409,10 +418,91 @@ class CObMoveArmJointGoalPlanned(AbstractAction):
 	def execute(self, component_name, target="", blocking=True):
 		ah = ActionHandle("move_arm_joint_planned", component_name, target, blocking)
 
-		rospy.loginfo("Move <<%s>> JOINT PARAMETER PLANNED", component_name)
+		rospy.loginfo("Move planned <<%s>> to <<%s>>",component_name,target)
+
+		## get joint_names from parameter server
+		#param_string = self.ns_global_prefix + "/" + component_name + "/joint_names"
+		#if not rospy.has_param(param_string):
+				#rospy.logerr("parameter %s does not exist on ROS Parameter Server, aborting...",param_string)
+				#ah.set_failed(2)
+				#return ah
+		#joint_names = rospy.get_param(param_string)
+		
+		## check joint_names parameter
+		#if not type(joint_names) is list: # check list
+				#rospy.logerr("no valid joint_names for %s: not a list, aborting...",component_name)
+				#print "joint_names are:",joint_names
+				#ah.set_failed(3)
+				#return ah
+		#else:
+			#for i in joint_names:
+				##print i,"type1 = ", type(i)
+				#if not type(i) is str: # check string
+					#rospy.logerr("no valid joint_names for %s: not a list of strings, aborting...",component_name)
+					#print "joint_names are:",param
+					#ah.set_failed(3)
+					#return ah
+				#else:
+					#rospy.logdebug("accepted joint_names for component %s",component_name)
+
+		# get joint values from parameter server
+		if type(target) is str:
+			if not rospy.has_param(self.ns_global_prefix + "/" + component_name + "/" + target):
+				rospy.logerr("parameter %s does not exist on ROS Parameter Server, aborting...",self.ns_global_prefix + "/" + component_name + "/" + target)
+				ah.set_failed(2)
+				return ah
+			param = rospy.get_param(self.ns_global_prefix + "/" + component_name + "/" + target)
+		else:
+			param = target
+
+		# check trajectory parameters
+		if not type(param) is list: # check outer list
+				rospy.logerr("no valid parameter for %s: not a list, aborting...",component_name)
+				print "parameter is:",param
+				ah.set_failed(3)
+				return ah
+
+		last_point = param[-1]
+		
+		if type(last_point) is str:
+			if not rospy.has_param(self.ns_global_prefix + "/" + component_name + "/" + last_point):
+				rospy.logerr("parameter %s does not exist on ROS Parameter Server, aborting...",self.ns_global_prefix + "/" + component_name + "/" + last_point)
+				ah.set_failed(2)
+				return ah
+			last_point = rospy.get_param(self.ns_global_prefix + "/" + component_name + "/" + last_point)
+			last_point = last_point[0] # \todo TODO: hack because only first point is used, no support for trajectories inside trajectories
+			#print last_point
+		elif type(last_point) is list:
+			rospy.logdebug("last_point is a list")
+		else:
+			rospy.logerr("no valid parameter for %s: not a list of lists or strings, aborting...",component_name)
+			print "parameter is:",param
+			ah.set_failed(3)
+			return ah
+
+		# here: last_point should be list of floats/ints
+		#print last_point
+		if not len(last_point) == self.DOF: # check dimension
+			rospy.logerr("no valid parameter for %s: dimension should be %d and is %d, aborting...",component_name,self.DOF,len(last_point))
+			print "parameter is:",param
+			ah.set_failed(3)
+			return ah
+
+		for value in last_point:
+			#print value,"type2 = ", type(value)
+			if not ((type(value) is float) or (type(value) is int)): # check type
+				#print type(value)
+				rospy.logerr("no valid parameter for %s: not a list of float or int, aborting...",component_name)
+				print "parameter is:",param
+				ah.set_failed(3)
+				return ah
+		
+			rospy.logdebug("accepted value %f for %s",value,component_name)
+
+
 
 		mp = MotionPlan()
-		mp += MoveArm("arm", target)
+		mp += MoveArm("arm", [last_point])
 		
 		planning_res = mp.plan(2)
 		print planning_res
