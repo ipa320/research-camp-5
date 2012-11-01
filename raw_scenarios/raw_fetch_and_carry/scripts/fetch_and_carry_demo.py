@@ -65,7 +65,7 @@ def main():
             transitions={'succeeded':'PERCEIVE_OBJECT',
                          'failed:INIT_ROBOT'})
 
-        smach.StateMachine.add('PERCEIVE_OBJECT', gsm.prepare_perception(),
+        smach.StateMachine.add('PERCEIVE_OBJECT', gsm.perceive_object(),
             transitions={'succeeded':'PICK_UP_OBJECT',
                          'failed:MOVE_TO_SOURCE'},
             output_keys=['object_list'])
