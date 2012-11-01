@@ -169,7 +169,7 @@ class CObPreparePerception(AbstractAction):
         ah = action_cmdr.move_head(target="back", blocking=True)
         if ah.get_error_code() != 0:
             return ah
-        return action_cmdr.move_torso(target="back", blocking=True)
+        return action_cmdr.move_torso(target="home", blocking=True)
 
 
 class CObMoveArmAction(AbstractAction):
@@ -619,13 +619,13 @@ class CObPickUpAction(AbstractAction):
 		wi.reset_collision_objects()
 		
 		# add table
-		table_extent = (2.0, 2.0, 0.8)
+		table_extent = (2.0, 2.0, 1.0)
 		table_pose = conversions.create_pose_stamped([ -0.5 - table_extent[0]/2.0, 0 ,table_extent[2]/2.0 ,0,0,0,1], 'base_link')
 		wi.add_collision_box(table_pose, table_extent, "table")
 		
 		mp = MotionPlan()
 		mp += CallFunction(sss.move, 'torso','front')
-		mp += MoveArm('arm',['pregrasp'])
+		#mp += MoveArm('arm',['pregrasp'])
 		mp += CallFunction(sss.move, 'sdh','cylopen', False)
 		
 		# OpenIssues:
@@ -633,29 +633,32 @@ class CObPickUpAction(AbstractAction):
 		# - there is no orientation in the target? -> hardcoded taken from pregrasp
 		grasp_pose = PoseStamped()
 		grasp_pose = deepcopy(target)
+		grasp_pose.header.stamp = rospy.Time.now()
 		grasp_pose.pose.orientation.x = 0.220
 		grasp_pose.pose.orientation.y = 0.670
 		grasp_pose.pose.orientation.z = -0.663
 		grasp_pose.pose.orientation.w = -0.253
-		mp += MoveArm('arm',[grasp_pose,['arm_7_link']], seed = 'pregrasp')
+		mp += MoveArm('arm',[grasp_pose,['sdh_grasp_link']], seed = 'pregrasp')
 		
-		mp += CallFunction(sss.move, 'sdh','cylclosed', False)
+		mp += CallFunction(sss.move, 'sdh','cylclosed', True)
 		
 		
 		#ah = self.actions.lift_object(target, blocking)
 		lift_pose = PoseStamped()
 		lift_pose = deepcopy(target)
-		lift_pose.pose.position.z += 0.2
+		lift_pose.header.stamp = rospy.Time.now()
+		lift_pose.pose.position.z += 0.08
 		lift_pose.pose.orientation.x = 0.220
 		lift_pose.pose.orientation.y = 0.670
 		lift_pose.pose.orientation.z = -0.663
 		lift_pose.pose.orientation.w = -0.253
-		mp += MoveArm('arm',[lift_pose,['sdh_grasp_link']], seed = 'pregrasp')
+		mp += MoveArm('arm',[lift_pose,['sdh_grasp_link']])
 		
 		
 		
 		#ah = self.actions.retrieve_object(target, blocking)
-		mp += MoveArm('arm',['hold'])
+		#mp += MoveArm('arm',['pregrasp'])
+		mp += MoveArm('arm',['wavein'])
 		
 		
 		
@@ -671,6 +674,7 @@ class CObPickUpAction(AbstractAction):
 					#rospy.logerr("Execution of MotionExecutable %s failed", e.name)
 					ah.set_failed(4)
 					break
+			ah.set_succeeded()
 		else:
 			rospy.logerr("Planning failed")
 			ah.set_failed(4)
