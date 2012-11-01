@@ -57,7 +57,7 @@ def main():
                         
         # needs to get object_pose from previous perception state                
         smach.StateMachine.add('PICK_UP_OBJECT', gsm.pick_up(),
-            transitions={'succeeded':''}
+            transitions={'succeeded':'MOVE_TO_DESTINATION_POSE'})
                        
 
         
