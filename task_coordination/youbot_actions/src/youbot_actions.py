@@ -104,10 +104,10 @@ class YouBotPreparePerception(AbstractAction):
         self.actions = actions
         
     def execute(self, blocking=True):
-        ah = action_cmdr.move_gripper("open")
+        ah = self.actions.move_gripper("open")
         if ah.get_error_code() != 0:
             return ah
-        return action_cmdr.move_arm("zeroposition")
+        return self.actions.move_arm("arm_out_of_view")
 
     
 
