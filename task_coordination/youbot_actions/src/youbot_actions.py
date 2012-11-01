@@ -42,6 +42,19 @@ class TestAction(AbstractAction):
 #
 
 
+class YouBotPickUpAction(AbstractAction):
+    action_name = "pick_up"
+    
+    def __init__(self, actions):
+        self.actions = actions
+
+    def execute(self, target, blocking=True):
+	self.actions.move_gripper(target="open", blocking=True)
+	self.actions.move_arm(target=target, blocking=True)
+	self.actions.move_gripper(target="close", blocking=True)
+	lifted_target = target
+	lifted_target.pose.position.z += 0.1
+	return self.actions.move_arm(target=lifted_target, blocking=True)
 
 class YouBotMoveArmAction(AbstractAction):
     action_name = "move_arm"
@@ -104,10 +117,10 @@ class YouBotPreparePerception(AbstractAction):
         self.actions = actions
         
     def execute(self, blocking=True):
-        ah = action_cmdr.move_gripper("open")
+        ah = self.actions.move_gripper("open")
         if ah.get_error_code() != 0:
             return ah
-        return action_cmdr.move_arm("zeroposition")
+        return self.actions.move_arm("arm_out_of_view")
 
     
 
@@ -439,6 +452,8 @@ class YouBotMoveGripperJoint(AbstractAction):
         ah.set_client(client)
 
         ah.wait_inside()
+	# it should block but it does not, so we wait!
+	rospy.sleep(3.0)
 
         return ah
 

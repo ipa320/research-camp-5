@@ -17,6 +17,7 @@
   <depend package="kinematics_msgs" />
   <depend package="geometry_msgs" />
   <depend package="tf" />
+  <depend package="youbot_joint_trajectory_action" />
   <depend package="youbot_arm_navigation" />  
   <depend package="control_msgs"/>
   <depend package="trajectory_msgs"/>

@@ -15,6 +15,7 @@
   <depend package="tf" />
   <depend package="brics_3d_msgs" /> 
   <depend package="geometry_msgs" />
+  <depend package="action_cmdr" />
   
 </package>
 
