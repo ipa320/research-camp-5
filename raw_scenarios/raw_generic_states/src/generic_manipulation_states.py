@@ -167,14 +167,16 @@ class place_object_in_configuration(smach.State):
         return 'succeeded'
         
         
-class pick_up(smach.State):
+class pick_object(smach.State):
 
     def __init__(self, do_blocking = True):
-        smach.State.__init__(self, outcomes=['succeeded'])
-
+        smach.State.__init__(self, outcomes=['succeeded', 'failed'], input_keys=['object_list'])
         self.do_blocking = do_blocking
 
     def execute(self, userdata):   
-        action_cmdr.pick_up()
+	# grasps first object in list
+	# THIS SHOULD BE BROUGHT OUT AS A SEPARATE STATE
+        action_cmdr.pick_up(userdata.object_list[0])
            
         return 'succeeded'           
+	# TODO: add failure check

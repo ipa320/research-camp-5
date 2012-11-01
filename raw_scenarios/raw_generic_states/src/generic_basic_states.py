@@ -20,7 +20,7 @@ action_cmdr.load(["generic_actions", robot_platform + "_actions"])
 class init_robot(smach.State):
 
     def __init__(self):
-        smach.State.__init__(self, outcomes=['succeeded'])
+        smach.State.__init__(self, outcomes=['succeeded', 'failed'])
         
     def execute(self, userdata):
         

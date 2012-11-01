@@ -10,6 +10,33 @@ import tf
 import geometry_msgs.msg
 from brics_3d_msgs.srv import GetSceneObjects
 
+from os import getenv
+robot_platform = getenv("ROBOT")
+# yes, this is a hack, a better solution is known and has been discussed,
+# cf. the Lua-based Behavior Engine, but is pending implementation after RC5
+if robot_platform == "cob3-3":
+    robot_platform = "cob"
+
+import action_cmdr
+action_cmdr.load(["generic_actions", robot_platform + "_actions"])
+
+class perceive_object(smach.State):
+    def __init__(self):
+        smach.State.__init__(
+            self,
+            outcomes=['succeeded', 'failed'],
+            output_keys=['object_list'])
+
+    def execute(self, userdata):
+        rospy.loginfo("robot initialized")
+        data = action_cmdr.perceive_object()
+        userdata.object_list = data
+        rospy.loginfo("robot initialized")
+	
+	if len(data) > 0:
+		return 'succeeded'
+	else:
+		return 'failed'
 
 
 class detect_object(smach.State):
