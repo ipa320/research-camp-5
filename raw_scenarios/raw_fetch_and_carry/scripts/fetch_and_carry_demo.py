@@ -36,42 +36,17 @@ def main():
             transitions={'succeeded':'MOVE_TO_SOURCE',
                          'failed':'overall_failed'})
 
-        '''
-        smach.StateMachine.add('INIT_ROBOT', gbs.init_robot(),
-            transitions={'succeeded':'SELECT_POSE_TO_APPROACH'})
-
-        # collect objects
-        smach.StateMachine.add('SELECT_POSE_TO_APPROACH', fcds.select_pose_to_approach(),
-            transitions={'succeeded':'MOVE_TO_GRASP_POSE'})
-        
-        smach.StateMachine.add('MOVE_TO_GRASP_POSE', gsm.approach_pose(),
-            transitions={'succeeded':'ADJUST_POSE_WRT_PLATFORM_AT_SOURCE', 
-                        'failed':'overall_failed'})
-
-        smach.StateMachine.add('ADJUST_POSE_WRT_PLATFORM_AT_SOURCE', gsm.adjust_pose_wrt_platform(),
-            transitions={'succeeded':'SM_GRASP_OBJECT',
-                         'failed':'ADJUST_POSE_WRT_PLATFORM_AT_SOURCE'})
-                      
-        smach.StateMachine.add('SM_GRASP_OBJECT', gsm.sm_grasp_random_object(),
-            transitions={'object_grasped':'PLACE_OBJECT_ON_REAR_PLATFORM', 
-                         'failed':'SM_GRASP_OBJECT'})
-                                
-        smach.StateMachine.add('PLACE_OBJECT_ON_REAR_PLATFORM', gsm.place_obj_on_rear_platform(),
-            transitions={'succeeded':'SELECT_POSE_TO_APPROACH', 
-                        'no_more_free_poses':'MOVE_TO_DESTINATION_POSE'})
-        '''
-
         smach.StateMachine.add('MOVE_TO_SOURCE', gsm.move_base(),
             transitions={'succeeded':'PERCEIVE_OBJECT',
                          'failed:INIT_ROBOT'})
 
-        smach.StateMachine.add('PERCEIVE_OBJECT', gsm.perceive_object(),
+        smach.StateMachine.add('PERCEIVE_OBJECT', gsm.perceive_object(SM.userdata),
             transitions={'succeeded':'PICK_UP_OBJECT',
                          'failed:MOVE_TO_SOURCE'},
             output_keys=['object_list'])
 
-        # needs to get object_pose from previous perception state                
-        smach.StateMachine.add('PICK_UP_OBJECT', gsm.grasp_object(),
+        # needs to get object_pose from previous perception state - chooses first object in retrieved list
+        smach.StateMachine.add('PICK_UP_OBJECT', gsm.grasp_object(SM.userdata.object_list[0]),
             transitions={'succeeded':'MOVE_TO_DESTINATION',
                          'failed':'PERCEIVE_OBJECT'},
             input_keys=['object_list'])
@@ -112,7 +87,30 @@ def main():
         smach.StateMachine.add('MOVE_TO_EXIT', gsm.approach_pose("EXIT"),
             transitions={'succeeded':'overall_success', 
                         'failed':'overall_failed'})
+        smach.StateMachine.add('INIT_ROBOT', gbs.init_robot(),
+            transitions={'succeeded':'SELECT_POSE_TO_APPROACH'})
+
+        # collect objects
+        smach.StateMachine.add('SELECT_POSE_TO_APPROACH', fcds.select_pose_to_approach(),
+            transitions={'succeeded':'MOVE_TO_GRASP_POSE'})
+        
+        smach.StateMachine.add('MOVE_TO_GRASP_POSE', gsm.approach_pose(),
+            transitions={'succeeded':'ADJUST_POSE_WRT_PLATFORM_AT_SOURCE', 
+                        'failed':'overall_failed'})
+        
+        smach.StateMachine.add('ADJUST_POSE_WRT_PLATFORM_AT_SOURCE', gsm.adjust_pose_wrt_platform(),
+            transitions={'succeeded':'SM_GRASP_OBJECT',
+                         'failed':'ADJUST_POSE_WRT_PLATFORM_AT_SOURCE'})
+                      
+        smach.StateMachine.add('SM_GRASP_OBJECT', gsm.sm_grasp_random_object(),
+            transitions={'object_grasped':'PLACE_OBJECT_ON_REAR_PLATFORM', 
+                         'failed':'SM_GRASP_OBJECT'})
+                                
+        smach.StateMachine.add('PLACE_OBJECT_ON_REAR_PLATFORM', gsm.place_obj_on_rear_platform(),
+            transitions={'succeeded':'SELECT_POSE_TO_APPROACH', 
+                        'no_more_free_poses':'MOVE_TO_DESTINATION_POSE'})
         '''
+
 
     # Start SMACH viewer
     smach_viewer = smach_ros.IntrospectionServer('FETCH_AND_CARRY_DEMO', SM, 'FETCH_AND_CARRY_DEMO')
