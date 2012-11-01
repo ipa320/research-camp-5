@@ -71,6 +71,7 @@ roslib.load_manifest('action_cmdr')
 import rospy
 import actionlib
 
+from action_cmdr.msg import DummyAction
 
 #------------------- action_handle section -------------------#	
 ## Action handle class.
@@ -85,7 +86,7 @@ class ActionHandle:
 		self.component_name = component_name
 		self.parameter_name = parameter_name
 		self.blocking = blocking
-		self.client = None
+		self.client = actionlib.SimpleActionClient("dummy", DummyAction)
 
 	## Sets the actionlib client.
 	def set_client(self,client):
@@ -108,7 +109,7 @@ class ActionHandle:
 	## Sets the execution state to succeeded.
 	def set_succeeded(self):
 		self.error_code = 0
-		
+	
 	## Sets the execution state to failed.
 	def set_failed(self,error_code):
 		self.error_code = error_code

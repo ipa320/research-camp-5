@@ -31,10 +31,15 @@ def main():
     # open the container
     with SM:
         # add states to the container
-        
+
+        smach.StateMachine.add('INIT_ROBOT', gbs.init_robot(),
+            transitions={'succeeded':'MOVE_TO_SOURCE',
+                         'failed':'overall_failed'})
+
+        '''
         smach.StateMachine.add('INIT_ROBOT', gbs.init_robot(),
             transitions={'succeeded':'SELECT_POSE_TO_APPROACH'})
-        
+
         # collect objects
         smach.StateMachine.add('SELECT_POSE_TO_APPROACH', fcds.select_pose_to_approach(),
             transitions={'succeeded':'MOVE_TO_GRASP_POSE'})
@@ -54,8 +59,28 @@ def main():
         smach.StateMachine.add('PLACE_OBJECT_ON_REAR_PLATFORM', gsm.place_obj_on_rear_platform(),
             transitions={'succeeded':'SELECT_POSE_TO_APPROACH', 
                         'no_more_free_poses':'MOVE_TO_DESTINATION_POSE'})
+        '''
 
-        
+        smach.StateMachine.add('MOVE_TO_SOURCE', gsm.move_base(),
+            transitions={'succeeded':'PERCEIVE_OBJECT',
+                         'failed:INIT_ROBOT'})
+
+        smach.StateMachine.add('PERCEIVE_OBJECT', gsm.prepare_perception(),
+            transitions={'succeeded':'PICK_UP_OBJECT',
+                         'failed:MOVE_TO_SOURCE'},
+            output_keys=['object_list'])
+
+        # needs to get object_pose from previous perception state                
+        smach.StateMachine.add('PICK_UP_OBJECT', gsm.grasp_object(),
+            transitions={'succeeded':'MOVE_TO_DESTINATION',
+                         'failed':'PERCEIVE_OBJECT'},
+            input_keys=['object_list'])
+
+        smach.StateMachine.add('MOVE_TO_DESTINATION', gsm.move_base(),
+            transitions={'succeeded':'PERCEIVE_OBJECT',
+                         'failed:INIT_ROBOT'})
+
+        '''
         # place object at destination pose
         smach.StateMachine.add('MOVE_TO_DESTINATION_POSE', gsm.approach_pose("D1"),
             transitions={'succeeded':'ADJUST_POSE_WRT_PLATFORM_AT_DESTINATION', 
@@ -87,8 +112,8 @@ def main():
         smach.StateMachine.add('MOVE_TO_EXIT', gsm.approach_pose("EXIT"),
             transitions={'succeeded':'overall_success', 
                         'failed':'overall_failed'})
-              
-            
+        '''
+
     # Start SMACH viewer
     smach_viewer = smach_ros.IntrospectionServer('FETCH_AND_CARRY_DEMO', SM, 'FETCH_AND_CARRY_DEMO')
     smach_viewer.start()

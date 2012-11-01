@@ -100,7 +100,7 @@ class TestAction(AbstractAction):
 # \param parameter_name Name of the parameter on the ROS parameter server.
 # \param blocking Bool value to specify blocking behaviour.
 
-class CObMoveGripperJoint(AbstractAction):
+class CObMoveGripperJointAction(AbstractAction):
 	action_name = "move_gripper"
 	action_server_name_prefix = "/script_server"
 
@@ -109,6 +109,39 @@ class CObMoveGripperJoint(AbstractAction):
 
 	def execute(self, target="", blocking=True):
 		return self.actions.move_joint_trajectory("sdh", "/sdh_controller/follow_joint_trajectory", target, blocking)
+
+
+class CObMoveTrayJointAction(AbstractAction):
+	action_name = "move_tray"
+	action_server_name_prefix = "/script_server"
+
+	def __init__(self, actions):
+		self.actions = actions
+
+	def execute(self, target="", blocking=True):
+		return self.actions.move_joint_trajectory("tray", "/tray_controller/follow_joint_trajectory", target, blocking)
+
+
+class CObMoveTorsoJointAction(AbstractAction):
+	action_name = "move_torso"
+	action_server_name_prefix = "/script_server"
+
+	def __init__(self, actions):
+		self.actions = actions
+
+	def execute(self, target="", blocking=True):
+		return self.actions.move_joint_trajectory("torso", "/torso_controller/follow_joint_trajectory", target, blocking)
+
+
+class CObMoveHeadJointAction(AbstractAction):
+	action_name = "move_head"
+	action_server_name_prefix = "/script_server"
+
+	def __init__(self, actions):
+		self.actions = actions
+
+	def execute(self, target="", blocking=True):
+		return self.actions.move_joint_trajectory("head", "/head_controller/follow_joint_trajectory", target, blocking)
 
 
 class CObMoveArmAction(AbstractAction):
@@ -147,7 +180,7 @@ class CObMoveArmPlannedAction(AbstractAction):
 			return self.actions.move_arm_joint_planned("arm", target, blocking)
 
 
-class CObMoveBase(AbstractAction):
+class CObMoveBaseAction(AbstractAction):
 	action_name = 'move_base'
 	ns_global_prefix = "/script_server"
 
@@ -253,7 +286,7 @@ class CObMoveBase(AbstractAction):
 
 
 
-class CObMoveArmJointGoalPlanned(AbstractAction):
+class CObMoveArmJointGoalPlannedAction(AbstractAction):
 	# this class appears to be just a wrapper
 	action_name = 'move_arm_joint_planned'
 	ns_global_prefix = "/script_server"
@@ -344,7 +377,7 @@ class CObMoveArmJointGoalPlanned(AbstractAction):
 
 
 
-class CObMoveArmCartesianPlanned(AbstractAction):
+class CObMoveArmCartesianPlannedAction(AbstractAction):
 	# this class appears to be just a wrapper
 	action_name = 'move_arm_cartesian_planned'
 	
@@ -384,7 +417,7 @@ class CObMoveArmCartesianPlanned(AbstractAction):
 # \param blocking Bool value to specify blocking behaviour.
 # 
 # # throws error code 3 in case of invalid parameter_name vector 
-class CObMoveBaseRel(AbstractAction):
+class CObMoveBaseRelAction(AbstractAction):
 	action_name = "move_base_rel"
 	
 	def execute(self, component_name, parameter_name=[0,0,0], blocking=True):	
@@ -449,7 +482,7 @@ class CObMoveBaseRel(AbstractAction):
 # \param component_name Name of the component.
 # \param mode Name of the operation mode to set.
 # \param blocking Service calls are always blocking. The parameter is only provided for compatibility with other functions.
-class CObSetOperationMode(AbstractAction):
+class CObSetOperationModeAction(AbstractAction):
 	action_name = 'set_operation_mode'
 	
 	def __init__(self, actions):
@@ -476,7 +509,7 @@ class CObSetOperationMode(AbstractAction):
 # The color is given by a parameter on the parameter server.
 #
 # \param parameter_name Name of the parameter on the parameter server which holds the rgb values.
-class CObSetLights(AbstractAction):
+class CObSetLightsAction(AbstractAction):
 	action_name = 'set_lights'
 	
 	def __init__(self, actions):
@@ -537,3 +570,103 @@ class CObSetLights(AbstractAction):
 		ah.set_succeeded()
 		ah.error_code = 0
 		return ah
+
+
+
+
+
+class CObPickUpAction(AbstractAction):
+	action_name = "pick_up"
+
+	def __init__(self, actions):
+		self.actions = actions
+
+	def execute(self, target=PoseStamped(), blocking=True):
+		ah = ActionHandle("pick_up", component_name, target, blocking)
+		rospy.loginfo("Picking up object...")
+		
+		ah = self.actions.grasp_object(target, blocking)
+		ah = self.actions.lift_object(target, blocking)
+		ah = self.actions.retrieve_object(target, blocking)
+		
+		return ah
+
+
+class CObGraspObjectAction(AbstractAction):
+	action_name = "grasp_object"
+
+	def __init__(self, actions):
+		self.actions = actions
+
+	def execute(self, target=PoseStamped(), blocking=True):
+		ah = ActionHandle("grasp_object", component_name, target, blocking)
+		rospy.loginfo("Grasping the object...")
+		
+		ah = self.actions.move_arm_planned("pregrasp", blocking)
+		ah = self.actions.move_gripper("cylopen", blocking)
+		
+		# OpenIssues:
+		# - where to place the sdh_grasp_link to grasp the object located at target?
+		# - there is no orientation in the target?
+		grasp_pose = PoseStamped()
+		grasp_pose = target
+		ah = self.actions.move_arm_planned(grasp_pose, blocking)
+		
+		ah = self.actions.move_gripper("cylclosed", blocking)
+		
+		return ah
+
+
+class CObLiftObjectAction(AbstractAction):
+	action_name = "lift_object"
+
+	def __init__(self, actions):
+		self.actions = actions
+
+	def execute(self, target=PoseStamped(), blocking=True):
+		ah = ActionHandle("lift_object", component_name, target, blocking)
+		rospy.loginfo("Lifting the object...")
+		
+		lift_pose = PoseStamped()
+		lift_pose = target
+		lift_pose.pose.position.z += 0.5
+		
+		mp = MotionPlan()
+		#mp += AttachObject('arm',  'milk')
+		#mp += EnableCollision('milk','table_ikea')
+		mp += MoveArm("arm",[lift_pose,['sdh_grasp_link']])
+		#mp += ResetCollisions()
+		
+		planning_res = mp.plan(2)
+		print planning_res
+
+		if planning_res.success:
+			for e in mp.execute():
+				exec_res = e.wait()
+				print exec_res
+				if not exec_res.success:
+					rospy.logerr("Execution of MotionExecutable %s failed", e.name)
+					ah.set_failed(3)
+					break
+		else:
+			rospy.logerr("Planning failed")
+			ah.set_failed(3)
+		
+		return ah
+
+
+class CObRetrieveObjectAction(AbstractAction):
+	action_name = "retrieve_object"
+
+	def __init__(self, actions):
+		self.actions = actions
+
+	def execute(self, target="", blocking=True):
+		ah = ActionHandle("retrieve_object", component_name, target, blocking)
+		rospy.loginfo("Retrieving the object...")
+		
+		ah = self.actions.move_arm_planned("hold", blocking)
+		
+		return ah
+
+
