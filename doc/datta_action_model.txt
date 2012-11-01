@@ -1,0 +1,12 @@
+@author: CHANDAN DATTA 
+@email: work.chandan@gmail.com
+@date: 30 Oct 2012 
+
+StateName: INIT_ROBOT
+Purpose/Description: initialize robot's arm and gripper
+Input:none
+Output: succeeded
+Preconditions: assumes that arm controller is running
+Effects: opens gripper and inits arm controller to joint init location
+Invariants/Guarantees: successful initialization of joint positions
+Possible Decomposition or Generalization: initialize 

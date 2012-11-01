@@ -49,7 +49,10 @@ class GripperActionServer:
 		# action server
 		self.as_move_joint_direct = actionlib.SimpleActionServer("MoveToJointConfigurationDirect", raw_arm_navigation.msg.MoveToJointConfigurationAction, execute_cb = self.execute_cb_move_joint_config_direct)
 	
-		
+		# service server
+		self.srv_gripper_closed = rospy.Service('is_gripper_closed',  ReturnBool , self.is_gripper_closed)
+  
+  
 	def joint_states_callback(self, msg):
 		for k in range(len(self.joint_names)):
 			for i in range(len(msg.name)):
@@ -103,7 +106,14 @@ class GripperActionServer:
 					
 		rospy.loginfo("gripper goal pose reached")
 		return True
-			            
+	
+
+	def is_gripper_closed(self, req):
+		for gripper_joint_value in self.current_joint_configuration:
+			if(gripper_joint_value > 0.003):
+				return False
+		return True
+		            
 
 if __name__ == "__main__":
 	rospy.init_node("gripper_action_server")	
