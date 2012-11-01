@@ -51,7 +51,7 @@ def main():
                          'failed':'PERCEIVE_OBJECT'})
 
         smach.StateMachine.add('MOVE_TO_DESTINATION', gsm.approach_pose('S1'),
-            transitions={'succeeded':'PERCEIVE_OBJECT',
+            transitions={'succeeded':'overall_success',
                          'failed':'INIT_ROBOT'})
 
         '''
