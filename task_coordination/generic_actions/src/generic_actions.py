@@ -27,6 +27,16 @@ from control_msgs.msg import FollowJointTrajectoryAction,FollowJointTrajectoryGo
 # Based on the component, the corresponding move functions will be called.
 #
 
+class PercieveObject(AbstractAction):
+    action_name = "perceive_object"
+
+    def __init__(self, actions):
+        self.actions = actions
+
+    def execute(self, wait_time=1, retries=10, blocking=True):
+        self.actions.prepare_perception(blocking=True)
+        self.actions.execute_perception(wait_time, retries, blocking)
+
 class PercieveAction(AbstractAction):
     action_name = "execute_perception"
     perception_service = '/raw_perception/object_segmentation/get_scene_objects'
