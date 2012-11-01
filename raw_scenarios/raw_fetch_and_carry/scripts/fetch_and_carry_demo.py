@@ -22,6 +22,7 @@ def main():
     SM.userdata.base_pose_list = ["S2", "S1"]
     SM.userdata.base_pose_to_approach = -1; 
     SM.userdata.object_list = [];
+    SM.userdata.target_object = 'uninitialized'
                                             # x, y, z, roll, pitch, yaw
     SM.userdata.rear_platform_free_poses = ['platform_centre']
     SM.userdata.rear_platform_occupied_poses = []
@@ -36,24 +37,22 @@ def main():
             transitions={'succeeded':'MOVE_TO_SOURCE',
                          'failed':'overall_failed'})
 
-        smach.StateMachine.add('MOVE_TO_SOURCE', gsm.move_base(),
+        smach.StateMachine.add('MOVE_TO_SOURCE', gsm.approach_pose('S2'),
             transitions={'succeeded':'PERCEIVE_OBJECT',
-                         'failed:INIT_ROBOT'})
+                         'failed':'INIT_ROBOT'})
 
-        smach.StateMachine.add('PERCEIVE_OBJECT', gsm.perceive_object(SM.userdata),
+        smach.StateMachine.add('PERCEIVE_OBJECT', gsm.perceive_object(),
             transitions={'succeeded':'PICK_UP_OBJECT',
-                         'failed:MOVE_TO_SOURCE'},
-            output_keys=['object_list'])
-
+                         'failed':'MOVE_TO_SOURCE'},)
+ 
         # needs to get object_pose from previous perception state - chooses first object in retrieved list
-        smach.StateMachine.add('PICK_UP_OBJECT', gsm.grasp_object(SM.userdata.object_list[0]),
+        smach.StateMachine.add('PICK_UP_OBJECT', gsm.pick_object(),
             transitions={'succeeded':'MOVE_TO_DESTINATION',
-                         'failed':'PERCEIVE_OBJECT'},
-            input_keys=['object_list'])
+                         'failed':'PERCEIVE_OBJECT'})
 
-        smach.StateMachine.add('MOVE_TO_DESTINATION', gsm.move_base(),
+        smach.StateMachine.add('MOVE_TO_DESTINATION', gsm.approach_pose('S1'),
             transitions={'succeeded':'PERCEIVE_OBJECT',
-                         'failed:INIT_ROBOT'})
+                         'failed':'INIT_ROBOT'})
 
         '''
         # place object at destination pose

@@ -600,6 +600,7 @@ class CObPickUpAction(AbstractAction):
 		self.actions = actions
 
 	def execute(self, target=PoseStamped(), blocking=True):
+		component_name = self.action_name
 		ah = ActionHandle("pick_up", component_name, target, blocking)
 		rospy.loginfo("Picking up object...")
 		
