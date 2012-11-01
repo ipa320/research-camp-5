@@ -379,6 +379,7 @@ bool CToolBoxROS::transformPointCloud(tf::TransformListener &tfListener,
 		success_tf = true;
 		} catch (tf::TransformException ex) {
 		//	setup_tf = true;
+            ROS_ERROR ("[transformPointCloud] Could not tf pc: %s.", ex.what());
 			success_tf = false;
 			return success_tf;
 		}
