@@ -3,16 +3,27 @@ import roslib
 roslib.load_manifest('action_cmdr')
 import rospy
 import action_cmdr
-action_cmdr.load(["generic_actions","cob_actions"])
+action_cmdr.load(["generic_actions","youbot_actions"])
 from geometry_msgs.msg import PoseStamped
 
 if __name__ == "__main__":
     rospy.init_node('test') # needed to add this so I could make trajectory messages, require timestamp
     rospy.sleep(2)
+
+    action_cmdr.move_base(target="S1",blocking=True)
     
-    #det_objects = action_cmdr.execute_perception(wait_time=1,retries=10,blocking=True)
-    #if len(det_objects) > 0:
-        #print("Got: %s",det_objects);
+    action_cmdr.prepare_perception()
+    
+    det_objects = action_cmdr.execute_perception(wait_time=1,retries=10,blocking=True)
+    if len(det_objects) > 0:
+        print("Got: %s",det_objects);
+	obj = det_objects[0]
+	ret = action_cmdr.pick_up(target=obj,blocking=True)
+        print("Got: %s",ret);
+	action_cmdr.move_base(target="D1",blocking=True)
+	action_cmdr.move_gripper(target="open",blocking=True)
+    else:
+	print("didn't find anything!")
 
     #action_cmdr.test("foo")
     
