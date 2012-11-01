@@ -6,10 +6,16 @@ import smach
 import smach_ros
 import math
 
-from simple_script_server import *
-from geometry_msgs.msg import PoseStamped
-sss = simple_script_server()
 
+from os import getenv
+robot_platform = getenv("ROBOT")
+# yes, this is a hack, a better solution is known and has been discussed,
+# cf. the Lua-based Behavior Engine, but is pending implementation after RC5
+if robot_platform == "cob3-3":
+    robot_platform = "cob"
+
+import action_cmdr
+action_cmdr.load(["generic_actions", robot_platform + "_actions"])
 
 class grasp_random_object(smach.State):
 
@@ -17,8 +23,8 @@ class grasp_random_object(smach.State):
         smach.State.__init__(self, outcomes=['succeeded', 'failed'], input_keys=['object_list'])
         
     def execute(self, userdata):
-        sss.move_gripper("open")
-        sss.move_arm("zeroposition")
+        action_cmdr.move_gripper("open")
+        action_cmdr.move_arm("zeroposition")
         
         for object in userdata.object_list:         
                 
@@ -99,8 +105,9 @@ class move_arm_out_of_view(smach.State):
         sss.move_arm("zeroposition")
         sss.move_arm("arm_out_of_view")
            
-        return 'succeeded'
-    
+        return 'succeeded'        
+        
+
     
 class grasp_obj_from_pltf(smach.State):
 
@@ -158,3 +165,16 @@ class place_object_in_configuration(smach.State):
         rospy.sleep(2)
                 
         return 'succeeded'
+        
+        
+class pick_up(smach.State):
+
+    def __init__(self, do_blocking = True):
+        smach.State.__init__(self, outcomes=['succeeded'])
+
+        self.do_blocking = do_blocking
+
+    def execute(self, userdata):   
+        action_cmdr.pick_up()
+           
+        return 'succeeded'           

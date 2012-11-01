@@ -24,8 +24,9 @@
   <depend package="arm_navigation_msgs"/>
   <depend package="cob_sound"/>
   <depend package="action_cmdr"/>
-
+  <depend package="cob_arm_navigation_python" />
   <depend package="rostest"/>
+  <depend package="generic_actions" />  
   
   <export>
     <actions action-modules="cob_actions" platform="cob3-3" />

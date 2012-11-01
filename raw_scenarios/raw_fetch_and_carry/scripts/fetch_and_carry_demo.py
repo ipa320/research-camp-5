@@ -54,6 +54,11 @@ def main():
         smach.StateMachine.add('PLACE_OBJECT_ON_REAR_PLATFORM', gsm.place_obj_on_rear_platform(),
             transitions={'succeeded':'SELECT_POSE_TO_APPROACH', 
                         'no_more_free_poses':'MOVE_TO_DESTINATION_POSE'})
+                        
+        # needs to get object_pose from previous perception state                
+        smach.StateMachine.add('PICK_UP_OBJECT', gsm.pick_up(),
+            transitions={'succeeded':''}
+                       
 
         
         # place object at destination pose
