@@ -7,8 +7,15 @@ import rospy
 import smach
 import smach_ros
 
+from os import getenv
+robot_platform = getenv("ROBOT")
+# yes, this is a hack, a better solution is known and has been discussed,
+# cf. the Lua-based Behavior Engine, but is pending implementation after RC5
+if robot_platform == "cob3-3":
+    robot_platform = "cob"
+
 import action_cmdr
-action_cmdr.init(PKG)
+action_cmdr.load(["generic_actions", robot_platform + "_actions"])
 
 class init_robot(smach.State):
 
