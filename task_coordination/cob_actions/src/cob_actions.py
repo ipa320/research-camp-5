@@ -111,6 +111,39 @@ class CObMoveGripperJoint(AbstractAction):
 		return self.actions.move_joint_trajectory("sdh", "/sdh_controller/follow_joint_trajectory", target, blocking)
 
 
+class CObMoveTrayJoint(AbstractAction):
+	action_name = "move_tray"
+	action_server_name_prefix = "/script_server"
+
+	def __init__(self, actions):
+		self.actions = actions
+
+	def execute(self, target="", blocking=True):
+		return self.actions.move_joint_trajectory("tray", "/tray_controller/follow_joint_trajectory", target, blocking)
+
+
+class CObMoveTorsoJoint(AbstractAction):
+	action_name = "move_torso"
+	action_server_name_prefix = "/script_server"
+
+	def __init__(self, actions):
+		self.actions = actions
+
+	def execute(self, target="", blocking=True):
+		return self.actions.move_joint_trajectory("torso", "/torso_controller/follow_joint_trajectory", target, blocking)
+
+
+class CObMoveHeadJoint(AbstractAction):
+	action_name = "move_head"
+	action_server_name_prefix = "/script_server"
+
+	def __init__(self, actions):
+		self.actions = actions
+
+	def execute(self, target="", blocking=True):
+		return self.actions.move_joint_trajectory("head", "/head_controller/follow_joint_trajectory", target, blocking)
+
+
 class CObMoveArmAction(AbstractAction):
 	action_name = "move_arm"
 	DOF = 7
