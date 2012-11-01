@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<launch>
+	<!-- base components -->
+	<!--include file="$(find raw_bringup)/robots/robot.launch" /-->
+	
+	<!-- upload parameters -->
+	<include file="$(find raw_config)/launch/push_config.launch" />
+	<include file="$(find raw_default_env_config)/upload_param.launch" />
+
+    <!-- navigation -->
+    <include file="$(find cob_navigation_global)/launch/2dnav_ros_dwa.launch">
+    	<arg name="map" value="$(find raw_default_env_config)/rc5/map.yaml"/>
+    </include>
+
+    <!-- behavior -->
+    <include file="$(find raw_base_placement)/ros/launch/placement_wrt_workspace.launch" />
+
+    <!-- manipulation -->
+    <!--include file="$(find raw_arm_navigation)/ros/launch/simple_manipulation.launch" /-->	
+
+    <!-- script server -->
+    <!--include file="$(find raw_script_server)/launch/script_server.launch" /-->
+
+    <!-- perception -->
+    <!--include file="$(find raw_bringup)/components/cam3d.launch" /-->
+    <include file="$(find raw_object_finder)/ros/launch/object_segmentation.launch" />
+
+</launch>

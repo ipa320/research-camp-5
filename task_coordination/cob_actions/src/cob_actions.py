@@ -62,9 +62,19 @@ from action_cmdr.action_handle import ActionHandle
 from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 from geometry_msgs.msg import PoseStamped
 from control_msgs.msg import FollowJointTrajectoryAction, FollowJointTrajectoryGoal
-from cob_arm_navigation_python.MotionPlan import MotionPlan
-from cob_arm_navigation_python.MoveArm import MoveArm
 from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
+
+from cob_arm_navigation_python.MotionPlan import MotionPlan, CallFunction
+from cob_arm_navigation_python.MoveArm import MoveArm
+from pr2_python.world_interface import WorldInterface
+from pr2_python import conversions
+
+from copy import deepcopy
+
+#only temporary
+from simple_script_server import *  # import script
+sss = simple_script_server()
+
 
 import roslib
 roslib.load_manifest('cob_actions')
@@ -154,6 +164,9 @@ class CObPreparePerception(AbstractAction):
         if ah.get_error_code() != 0:
             return ah
         ah = action_cmdr.move_arm("look_at_table") 
+        if ah.get_error_code() != 0:
+            return ah
+        ah = action_cmdr.move_head(target="back", blocking=True)
         if ah.get_error_code() != 0:
             return ah
         return action_cmdr.move_torso(target="back", blocking=True)
@@ -416,11 +429,11 @@ class CObMoveArmCartesianPlannedAction(AbstractAction):
 				print exec_res
 				if not exec_res.success:
 					rospy.logerr("Execution of MotionExecutable %s failed", e.name)
-					ah.set_failed(3)
+					ah.set_failed(4)
 					break
 		else:
 			rospy.logerr("Planning failed")
-			ah.set_failed(3)
+			ah.set_failed(4)
 
 		return ah
 
@@ -448,17 +461,17 @@ class CObMoveBaseRelAction(AbstractAction):
 		if not len(parameter_name) == 3 or not isinstance(parameter_name[0], (int, float)) or not isinstance(parameter_name[1], (int, float)) or not isinstance(parameter_name[2], (int, float)):
 			rospy.logerr("Non-numeric parameter_name list, aborting move_base_rel")
 			print("parameter_name must be numeric list of length 3; (relative x and y transl [m], relative rotation [rad])")
-			ah.set_failed(3)
+			ah.set_failed(4)
 			return ah
 		if math.sqrt(parameter_name[0]**2 + parameter_name[1]**2) >= 0.15:
 			rospy.logerr("Maximal relative translation step exceeded, aborting move_base_rel")
 			print("Maximal relative translation step is 0.1 m")
-			ah.set_failed(3)
+			ah.set_failed(4)
 			return(ah)
 		if abs(parameter_name[2]) >= math.pi/2:
 			rospy.logerr("Maximal relative rotation step exceeded, aborting move_base_rel")
 			print("Maximal relative rotation step is pi/2")
-			ah.set_failed(3)
+			ah.set_failed(4)
 			return(ah)
 
 		# step 1: determine duration of motion so that upper thresholds for both translational as well as rotational velocity are not exceeded
@@ -597,60 +610,55 @@ class CObPickUpAction(AbstractAction):
 		self.actions = actions
 
 	def execute(self, target=PoseStamped(), blocking=True):
-		ah = ActionHandle("pick_up", component_name, target, blocking)
+		ah = ActionHandle("pick_up", "dummy", "", blocking)
 		rospy.loginfo("Picking up object...")
 		
-		ah = self.actions.grasp_object(target, blocking)
-		ah = self.actions.lift_object(target, blocking)
-		ah = self.actions.retrieve_object(target, blocking)
+		#ah = self.actions.grasp_object(target, blocking)
+		wi = WorldInterface()
+		wi.reset_attached_objects()
+		wi.reset_collision_objects()
 		
-		return ah
-
-
-class CObGraspObjectAction(AbstractAction):
-	action_name = "grasp_object"
-
-	def __init__(self, actions):
-		self.actions = actions
-
-	def execute(self, target=PoseStamped(), blocking=True):
-		ah = ActionHandle("grasp_object", component_name, target, blocking)
-		rospy.loginfo("Grasping the object...")
+		# add table
+		table_extent = (2.0, 2.0, 0.8)
+		table_pose = conversions.create_pose_stamped([ -0.5 - table_extent[0]/2.0, 0 ,table_extent[2]/2.0 ,0,0,0,1], 'base_link')
+		wi.add_collision_box(table_pose, table_extent, "table")
 		
-		ah = self.actions.move_arm_planned("pregrasp", blocking)
-		ah = self.actions.move_gripper("cylopen", blocking)
+		mp = MotionPlan()
+		mp += CallFunction(sss.move, 'torso','front')
+		mp += MoveArm('arm',['pregrasp'])
+		mp += CallFunction(sss.move, 'sdh','cylopen', False)
 		
 		# OpenIssues:
 		# - where to place the sdh_grasp_link to grasp the object located at target?
-		# - there is no orientation in the target?
+		# - there is no orientation in the target? -> hardcoded taken from pregrasp
 		grasp_pose = PoseStamped()
-		grasp_pose = target
-		ah = self.actions.move_arm_planned(grasp_pose, blocking)
+		grasp_pose = deepcopy(target)
+		grasp_pose.pose.orientation.x = 0.220
+		grasp_pose.pose.orientation.y = 0.670
+		grasp_pose.pose.orientation.z = -0.663
+		grasp_pose.pose.orientation.w = -0.253
+		mp += MoveArm('arm',[grasp_pose,['arm_7_link']], seed = 'pregrasp')
 		
-		ah = self.actions.move_gripper("cylclosed", blocking)
+		mp += CallFunction(sss.move, 'sdh','cylclosed', False)
 		
-		return ah
-
-
-class CObLiftObjectAction(AbstractAction):
-	action_name = "lift_object"
-
-	def __init__(self, actions):
-		self.actions = actions
-
-	def execute(self, target=PoseStamped(), blocking=True):
-		ah = ActionHandle("lift_object", component_name, target, blocking)
-		rospy.loginfo("Lifting the object...")
 		
+		#ah = self.actions.lift_object(target, blocking)
 		lift_pose = PoseStamped()
-		lift_pose = target
-		lift_pose.pose.position.z += 0.5
+		lift_pose = deepcopy(target)
+		lift_pose.pose.position.z += 0.2
+		lift_pose.pose.orientation.x = 0.220
+		lift_pose.pose.orientation.y = 0.670
+		lift_pose.pose.orientation.z = -0.663
+		lift_pose.pose.orientation.w = -0.253
+		mp += MoveArm('arm',[lift_pose,['sdh_grasp_link']], seed = 'pregrasp')
 		
-		mp = MotionPlan()
-		#mp += AttachObject('arm',  'milk')
-		#mp += EnableCollision('milk','table_ikea')
-		mp += MoveArm("arm",[lift_pose,['sdh_grasp_link']])
-		#mp += ResetCollisions()
+		
+		
+		#ah = self.actions.retrieve_object(target, blocking)
+		mp += MoveArm('arm',['hold'])
+		
+		
+		
 		
 		planning_res = mp.plan(2)
 		print planning_res
@@ -660,28 +668,149 @@ class CObLiftObjectAction(AbstractAction):
 				exec_res = e.wait()
 				print exec_res
 				if not exec_res.success:
-					rospy.logerr("Execution of MotionExecutable %s failed", e.name)
-					ah.set_failed(3)
+					#rospy.logerr("Execution of MotionExecutable %s failed", e.name)
+					ah.set_failed(4)
 					break
 		else:
 			rospy.logerr("Planning failed")
-			ah.set_failed(3)
+			ah.set_failed(4)
 		
 		return ah
 
 
-class CObRetrieveObjectAction(AbstractAction):
-	action_name = "retrieve_object"
+#class CObGraspObjectAction(AbstractAction):
+	#action_name = "grasp_object"
 
-	def __init__(self, actions):
-		self.actions = actions
+	#def __init__(self, actions):
+		#self.actions = actions
 
-	def execute(self, target="", blocking=True):
-		ah = ActionHandle("retrieve_object", component_name, target, blocking)
-		rospy.loginfo("Retrieving the object...")
+	#def execute(self, target=PoseStamped(), blocking=True):
+		#ah = ActionHandle("grasp_object", "dummy", "", blocking)
+		#rospy.loginfo("Grasping the object...")
 		
-		ah = self.actions.move_arm_planned("hold", blocking)
+		#wi = WorldInterface()
+		#wi.reset_attached_objects()
+		#wi.reset_collision_objects()
 		
-		return ah
+		## add table
+		#table_extent = (2.0, 2.0, 0.8)
+		#table_pose = conversions.create_pose_stamped([ -0.5 - table_extent[0]/2.0, 0 ,table_extent[2]/2.0 ,0,0,0,1], 'base_link')
+		#wi.add_collision_box(table_pose, table_extent, "table")
+		
+		#mp = MotionPlan()
+		#mp += CallFunction(sss.move, 'torso','front')
+		#mp += MoveArm('arm',['pregrasp'])
+		#mp += CallFunction(sss.move, 'sdh','cylopen', False)
+		
+		## OpenIssues:
+		## - where to place the sdh_grasp_link to grasp the object located at target?
+		## - there is no orientation in the target? -> hardcoded taken from pregrasp
+		#grasp_pose = PoseStamped()
+		#grasp_pose = target
+		#grasp_pose.pose.orientation.x = 0.220
+		#grasp_pose.pose.orientation.y = 0.670
+		#grasp_pose.pose.orientation.z = -0.663
+		#grasp_pose.pose.orientation.w = -0.253
+		
+		#mp += MoveArm('arm',[grasp_pose,['sdh_grasp_link']], seed = 'pregrasp')
+		
+		#mp += CallFunction(sss.move, 'sdh','cylclosed', False)
+		
+		
+		#planning_res = mp.plan(2)
+		#print planning_res
+
+		#if planning_res.success:
+			#for e in mp.execute():
+				#exec_res = e.wait()
+				#print exec_res
+				#if not exec_res.success:
+					#rospy.logerr("Execution of MotionExecutable %s failed", e.name)
+					#ah.set_failed(4)
+					#break
+		#else:
+			#rospy.logerr("Planning failed")
+			#ah.set_failed(4)
+		
+		#return ah
+
+
+#class CObLiftObjectAction(AbstractAction):
+	#action_name = "lift_object"
+
+	#def __init__(self, actions):
+		#self.actions = actions
+
+	#def execute(self, target=PoseStamped(), blocking=True):
+		#ah = ActionHandle("lift_object", "dummy", "", blocking)
+		#rospy.loginfo("Lifting the object...")
+		
+		#wi = WorldInterface()
+		#wi.reset_attached_objects()
+		#wi.reset_collision_objects()
+		
+		## add table
+		#table_extent = (2.0, 2.0, 0.8)
+		#table_pose = conversions.create_pose_stamped([ -0.5 - table_extent[0]/2.0, 0 ,table_extent[2]/2.0 ,0,0,0,1], 'base_link')
+		#wi.add_collision_box(table_pose, table_extent, "table")
+		
+		#mp = MotionPlan()
+		
+		## OpenIssues:
+		## - where to place the sdh_grasp_link to grasp the object located at target?
+		## - there is no orientation in the target?
+		#lift_pose = PoseStamped()
+		#lift_pose = target
+		#lift_pose.pose.position.z += 0.1
+		#lift_pose.pose.orientation.x = 0.220
+		#lift_pose.pose.orientation.y = 0.670
+		#lift_pose.pose.orientation.z = -0.663
+		#lift_pose.pose.orientation.w = -0.253
+		#mp += MoveArm('arm',[lift_pose,['sdh_grasp_link']])
+		
+		
+		#for ex in mp.execute():
+			#if not ex.wait(80.0).success:
+				##sss.set_light('red')
+				#ah.set_failed(4)
+				#break
+			##sss.set_light('green')
+			#ah.set_failed(3)
+		
+		#return ah
+
+
+#class CObRetrieveObjectAction(AbstractAction):
+	#action_name = "retrieve_object"
+
+	#def __init__(self, actions):
+		#self.actions = actions
+
+	#def execute(self, target="", blocking=True):
+		#ah = ActionHandle("retrieve_object", "dummy", "", blocking)
+		#rospy.loginfo("Retrieving the object...")
+		
+		#wi = WorldInterface()
+		#wi.reset_attached_objects()
+		#wi.reset_collision_objects()
+		
+		## add table
+		#table_extent = (2.0, 2.0, 0.8)
+		#table_pose = conversions.create_pose_stamped([ -0.5 - table_extent[0]/2.0, 0 ,table_extent[2]/2.0 ,0,0,0,1], 'base_link')
+		#wi.add_collision_box(table_pose, table_extent, "table")
+		
+		#mp = MotionPlan()
+		#mp += MoveArm('arm',['hold'])
+		
+		
+		#for ex in mp.execute():
+			#if not ex.wait(80.0).success:
+				##sss.set_light('red')
+				#ah.set_failed(4)
+				#break
+			##sss.set_light('green')
+			#ah.set_failed(3)
+		
+		#return ah
 
 
