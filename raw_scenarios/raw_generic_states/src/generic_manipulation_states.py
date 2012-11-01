@@ -176,7 +176,9 @@ class pick_object(smach.State):
     def execute(self, userdata):   
 	# grasps first object in list
 	# THIS SHOULD BE BROUGHT OUT AS A SEPARATE STATE
-        action_cmdr.pick_up(userdata.object_list[0])
-           
-        return 'succeeded'           
+        ah = action_cmdr.pick_up(userdata.object_list[0])
+        if ah.get_state() == 3: 
+	        return 'succeeded'
+	else:
+		return 'failed'
 	# TODO: add failure check

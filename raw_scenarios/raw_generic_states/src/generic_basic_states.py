@@ -25,10 +25,10 @@ class init_robot(smach.State):
     def execute(self, userdata):
         
         # init arm
-        arm_to_init = action_cmdr.move_arm("initposition")
+        arm_to_init = action_cmdr.move_arm("look_at_table")
         
         #init gripper
-        gripper_open = action_cmdr.move_gripper("open")
+        # gripper_open = action_cmdr.move_gripper("open")
                        
         rospy.loginfo("robot initialized")
         

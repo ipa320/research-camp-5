@@ -19,6 +19,7 @@ def main():
     SM = smach.StateMachine(outcomes=['overall_failed', 'overall_success'])
     
     # world knowledge
+    SM.userdata.perception_attempts = 10
     SM.userdata.base_pose_list = ["S2", "S1"]
     SM.userdata.base_pose_to_approach = -1; 
     SM.userdata.object_list = [];
@@ -39,11 +40,12 @@ def main():
 
         smach.StateMachine.add('MOVE_TO_SOURCE', gsm.approach_pose('S2'),
             transitions={'succeeded':'PERCEIVE_OBJECT',
-                         'failed':'INIT_ROBOT'})
+                         'failed':'overall_failed'})
 
         smach.StateMachine.add('PERCEIVE_OBJECT', gsm.perceive_object(),
-            transitions={'succeeded':'PICK_UP_OBJECT',
-                         'failed':'MOVE_TO_SOURCE'},)
+            transitions={'found_objects':'PICK_UP_OBJECT',
+                         'found_no_objects':'MOVE_TO_SOURCE',
+			 'attempt_limit_exceeded':'overall_failed'})
  
         # needs to get object_pose from previous perception state - chooses first object in retrieved list
         smach.StateMachine.add('PICK_UP_OBJECT', gsm.pick_object(),
@@ -52,7 +54,7 @@ def main():
 
         smach.StateMachine.add('MOVE_TO_DESTINATION', gsm.approach_pose('S1'),
             transitions={'succeeded':'overall_success',
-                         'failed':'INIT_ROBOT'})
+                         'failed':'overall_failed'})
 
         '''
         # place object at destination pose

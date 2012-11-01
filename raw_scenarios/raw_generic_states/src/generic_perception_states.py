@@ -24,7 +24,7 @@ class perceive_object(smach.State):
     def __init__(self):
         smach.State.__init__(
             self,
-            outcomes=['found_object', 'found_no_object','attempt_limit_exceeded'],
+            outcomes=['found_objects', 'found_no_objects','attempt_limit_exceeded'],
             input_keys=['perception_attempts'], 
             output_keys=['object_list'])
 	self.attempts = 0
@@ -40,9 +40,9 @@ class perceive_object(smach.State):
         rospy.loginfo("ended looking for objects")
 	
 	if len(data) > 0:
-		return 'succeeded'
+		return 'found_objects'
 	else:
-		return 'failed'
+		return 'found_no_objects'
 
 
 class detect_object(smach.State):
