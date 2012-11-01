@@ -13,6 +13,7 @@ from raw_arm_navigation.msg import MoveToJointConfigurationGoal, MoveToJointConf
 from brics_actuator.msg import JointValue
 from geometry_msgs.msg import PoseStamped
 from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
+from raw_base_placement.msg import OrientToBaseAction, OrientToBaseActionGoal
 
 import roslib
 roslib.load_manifest('youbot_actions')
@@ -109,6 +110,35 @@ class YouBotMoveArmAction(AbstractAction):
         #elif component_name == "gripper":
             #return self.actions.move_gripper_joint(component_name, target, blocking)
 
+class YouBotAlignWrtWorkspace(AbstractAction):
+    action_name = "align_wrt_workspace"
+
+    def __init__(self, actions):
+	self.actions = actions
+
+        self.ac_base_adj_name = '/raw_base_placement/adjust_to_workspace'
+        self.ac_base_adj = actionlib.SimpleActionClient(self.ac_base_adj_name, OrientToBaseAction)
+
+    def execute(self, blocking = True):
+        rospy.loginfo("Waiting for action server <<%s>> to start ...", self.ac_base_adj_name);
+        self.ac_base_adj.wait_for_server()
+        rospy.loginfo("action server <<%s>> is ready ...", self.ac_base_adj_name);
+        action_goal = OrientToBaseActionGoal()
+
+        action_goal.goal.distance = 0.1;
+        rospy.loginfo("send action");
+        self.ac_base_adj.send_goal(action_goal.goal);
+
+        rospy.loginfo("wait for base to adjust");
+        finished_before_timeout = self.ac_base_adj.wait_for_result()
+
+        if finished_before_timeout:
+            rospy.loginfo("Action finished: %s", self.ac_base_adj.get_state())
+            return 'succeeded'
+        else:
+            rospy.logerr("Action did not finish before the time out!")
+            return 'failed'
+
 
 class YouBotPreparePerception(AbstractAction):
     action_name = "prepare_perception"
@@ -117,6 +147,7 @@ class YouBotPreparePerception(AbstractAction):
         self.actions = actions
         
     def execute(self, blocking=True):
+        self.actions.align_wrt_workspace(blocking=True)
         ah = self.actions.move_gripper("open")
         if ah.get_error_code() != 0:
             return ah

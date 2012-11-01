@@ -120,9 +120,10 @@ public:
 			ROS_INFO("point_cloud_in: %s", config.point_cloud_in.c_str());
 			const_input_cloud = ros::topic::waitForMessage<sensor_msgs::PointCloud2>(config.point_cloud_in, ros::Duration(30));
 			ROS_INFO("received point cloud data. Doing preprocessing now ...");
-			input_cloud = *const_input_cloud;
+            if(const_input_cloud)
+    			input_cloud = *const_input_cloud;
 
-		}while(!PreparePointCloud(input_cloud, point_cloud));
+		}while(!const_input_cloud || !PreparePointCloud(input_cloud, point_cloud));
 
 		try {
 			// start with an empty set of segmented objects

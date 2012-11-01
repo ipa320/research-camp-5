@@ -14,7 +14,7 @@
 
 using namespace raw_base_placement;
 
-#define TARGET_DISTANCE 0.5
+#define TARGET_DISTANCE 0.1
 #define MAX_VELOCITY 0.1
 #define KP_APPROACH 0.5
 
@@ -139,7 +139,7 @@ public:
 
 		BaseScanLinearRegression srv;
 
-		double min_angle, max_angle, min_dist, max_dist;
+		double min_angle = -M_PI/8.0, max_angle=M_PI/8.0, min_dist=0.02, max_dist=0.8;
 		nh_.getParamCached("/laser_linear_regression/min_angle", min_angle);
 		nh_.getParamCached("/laser_linear_regression/max_angle", max_angle);
 		nh_.getParamCached("/laser_linear_regression/min_dist", min_dist);
@@ -149,6 +149,7 @@ public:
 		srv.request.filter_maxAngle = angles::from_degrees(max_angle);
 		srv.request.filter_minDistance = min_dist;
 		srv.request.filter_maxDistance = max_dist;
+		std::cout << "min_dist " << min_dist << ", max_dist " << max_dist << std::endl;
 		//srv.request.filter_minAngle = -M_PI / 8.0;
 		//srv.request.filter_maxAngle = M_PI / 8.0;
 		//srv.request.filter_minDistance = 0.02;

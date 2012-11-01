@@ -1,5 +1,8 @@
 <?xml version="1.0"?>
 <launch>
+
+   <include file="$(find raw_config)/launch/push_config.launch" />
+
 	<!-- base components -->
 	<include file="$(find raw_bringup)/robots/robot.launch" />
 
@@ -7,7 +10,7 @@
     <include file="$(find raw_2dnav)/ros/launch/2dnav.launch" />
 
     <!-- behavior -->
-    <include file="$(find raw_base_placement)/ros/launch/placement_wrt_workspace.launch" />
+    <include file="$(find raw_base_placement)/ros/launch/placement_wrt_workspace_$(env ROBOT).launch" />
 
     <!-- manipulation -->
     <include file="$(find raw_arm_navigation)/ros/launch/simple_manipulation.launch" />	
