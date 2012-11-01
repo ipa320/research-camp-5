@@ -10,8 +10,12 @@ if __name__ == "__main__":
     rospy.init_node('test') # needed to add this so I could make trajectory messages, require timestamp
     rospy.sleep(2)
     #action_cmdr.test("foo")
-    #action_cmdr.move_arm(target="zeroposition", blocking=True)
-    action_cmdr.move_arm(target="wavein", blocking=True)
+    
+    action_cmdr.move_arm(target=["wavein","waveout","wavein"], blocking=True)
+    action_cmdr.move_arm_planned(target=["waveout","wavein","waveout"], blocking=True)
+    
+    
+    
     pose = PoseStamped()
 
 ### youbot
@@ -36,5 +40,8 @@ if __name__ == "__main__":
     pose.pose.orientation.z = -0.664
     pose.pose.orientation.w = -0.236   
 
-    action_cmdr.move_arm(target=pose, blocking=True)
+
+
+
+    action_cmdr.move_arm_planned(target=pose, blocking=True)
 
