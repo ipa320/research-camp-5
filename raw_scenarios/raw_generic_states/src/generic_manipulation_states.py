@@ -108,8 +108,9 @@ class move_arm_out_of_view(smach.State):
         action_cmdr.move_arm("zeroposition")
         action_cmdr.move_arm("arm_out_of_view")
            
-        return 'succeeded'
-    
+        return 'succeeded'        
+        
+
     
 class grasp_obj_from_pltf(smach.State):
 
@@ -167,3 +168,16 @@ class place_object_in_configuration(smach.State):
         rospy.sleep(2)
                 
         return 'succeeded'
+        
+        
+class pick_up(smach.State):
+
+    def __init__(self, do_blocking = True):
+        smach.State.__init__(self, outcomes=['succeeded'])
+
+        self.do_blocking = do_blocking
+
+    def execute(self, userdata):   
+        action_cmdr.pick_up()
+           
+        return 'succeeded'           
