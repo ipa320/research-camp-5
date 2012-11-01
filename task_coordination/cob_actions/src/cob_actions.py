@@ -143,6 +143,21 @@ class CObMoveHeadJointAction(AbstractAction):
 	def execute(self, target="", blocking=True):
 		return self.actions.move_joint_trajectory("head", "/head_controller/follow_joint_trajectory", target, blocking)
 
+class CObPreparePerception(AbstractAction):
+    action_name = "prepare_perception"
+ 
+    def __init__(self, actions):
+        self.actions = actions
+        
+    def execute(self, blocking=True):
+        ah = action_cmdr.move_tray(target="up", blocking=True)
+        if ah.get_error_code() != 0:
+            return ah
+        ah = action_cmdr.move_arm("look_at_table") 
+        if ah.get_error_code() != 0:
+            return ah
+        return action_cmdr.move_torso(target="back", blocking=True)
+
 
 class CObMoveArmAction(AbstractAction):
 	action_name = "move_arm"

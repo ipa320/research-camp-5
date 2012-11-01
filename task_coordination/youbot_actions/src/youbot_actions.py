@@ -97,7 +97,17 @@ class YouBotMoveArmAction(AbstractAction):
             #return self.actions.move_gripper_joint(component_name, target, blocking)
 
 
-
+class YouBotPreparePerception(AbstractAction):
+    action_name = "prepare_perception"
+ 
+    def __init__(self, actions):
+        self.actions = actions
+        
+    def execute(self, blocking=True):
+        ah = action_cmdr.move_gripper("open")
+        if ah.get_error_code() != 0:
+            return ah
+        return action_cmdr.move_arm("zeroposition")
 
     
 
