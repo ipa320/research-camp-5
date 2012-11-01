@@ -25,13 +25,19 @@ class perceive_object(smach.State):
         smach.State.__init__(
             self,
             outcomes=['succeeded', 'failed'],
+            input_keys=['perception_attempts'], 
             output_keys=['object_list'])
+	self.attempts = 0
 
     def execute(self, userdata):
-        rospy.loginfo("robot initialized")
+	self.attempts += 1
+	if self.attempts > userdata.perception_attempts:
+		return 'failed'
+
+        rospy.loginfo("started looking for objects")
         data = action_cmdr.perceive_object()
         userdata.object_list = data
-        rospy.loginfo("robot initialized")
+        rospy.loginfo("ended looking for objects")
 	
 	if len(data) > 0:
 		return 'succeeded'
