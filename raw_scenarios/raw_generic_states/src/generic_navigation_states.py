@@ -1,15 +1,15 @@
 #!/usr/bin/python
+PKG = 'raw_generic_states'
 import roslib
-roslib.load_manifest('raw_generic_states')
+roslib.load_manifest(PKG)
 import rospy
 import smach
 import smach_ros
 import actionlib 
 import raw_base_placement.msg
 
-from simple_script_server import *
-sss = simple_script_server()
-
+import action_cmdr
+action_cmdr.init(PKG)
 
 class approach_pose(smach.State):
 
@@ -25,7 +25,7 @@ class approach_pose(smach.State):
         else:
 	    	self.pose2 = self.pose 
         
-        handle_base = sss.move("base", self.pose2)
+        handle_base = action_cmdr.move_base(self.pose2)
 
         while True:                
             rospy.sleep(0.1)
@@ -55,7 +55,7 @@ class adjust_pose_wrt_platform(smach.State):
         rospy.loginfo("action server <<%s>> is ready ...", self.ac_base_adj_name);
         action_goal = raw_base_placement.msg.OrientToBaseActionGoal()
             
-        action_goal.goal.distance = 0.1;
+        action_goal.goal.distance = 0.4;
         rospy.loginfo("send action");
         self.ac_base_adj.send_goal(action_goal.goal);
         

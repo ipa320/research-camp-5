@@ -1,6 +1,8 @@
 <?xml version="1.0"?>
 <launch>
-	
+	<!-- upload object_segmentation parameter -->
+	<rosparam command="load" ns="raw_perception/object_segmentation" file="$(find raw_object_finder)/cfg/object_segmentation_$(env ROBOT).yaml"/>		
+
 	<!-- cluster bounding box finder-->
 	<node pkg="object_manipulator" type="cluster_bounding_box_finder_server.py" name="cluster_bounding_box_finder" ns="raw_perception/object_segmentation" output="log" respawn="false">
 		<param name="z_up_frame" value="/base_link" />

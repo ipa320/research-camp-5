@@ -1,0 +1,23 @@
+<package>
+  <description brief="generic_actions">
+
+     generic_actions
+
+  </description>
+  <author>Florian Weisshardt</author>
+  <license>LGPL</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/script_server_generic</url>
+
+  <depend package="action_cmdr" />
+  <depend package="trajectory_msgs" />
+  <depend package="control_msgs" />
+
+  <export>
+    <actions action-modules="generic_actions" platform="cob3-3" />
+  </export>
+ 
+
+</package>
+
+
