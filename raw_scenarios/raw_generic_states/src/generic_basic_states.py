@@ -21,7 +21,7 @@ class init_robot(smach.State):
         arm_to_init = action_cmdr.move_arm("initposition")
         
         #init gripper
-        #gripper_open = action_cmdr.move("gripper", "open")
+        gripper_open = action_cmdr.move_gripper("open")
                        
         rospy.loginfo("robot initialized")
         
