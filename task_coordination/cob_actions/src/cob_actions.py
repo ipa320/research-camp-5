@@ -617,11 +617,12 @@ class CObGraspObjectAction(AbstractAction):
 		self.actions = actions
 
 	def execute(self, target=PoseStamped(), blocking=True):
+		component_name = 'grasp_object'
 		ah = ActionHandle("grasp_object", component_name, target, blocking)
 		rospy.loginfo("Grasping the object...")
 		
-		ah = self.actions.move_arm_planned("pregrasp", blocking)
 		ah = self.actions.move_gripper("cylopen", blocking)
+		ah = self.actions.move_arm_planned("pregrasp", blocking)
 		
 		# OpenIssues:
 		# - where to place the sdh_grasp_link to grasp the object located at target?
