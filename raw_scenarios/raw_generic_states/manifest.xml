@@ -19,12 +19,10 @@
   <depend package="raw_srvs"/>
   <depend package="std_srvs"/>
   <depend package="action_cmdr"/>
-  <!--depend package="youbot_actions"/-->
   <depend package="raw_base_placement"/>
   <depend package="actionlib"/>  
   <depend package="raw_srvs"/> 
   <depend package="brics_3d_msgs" /> 
-  <depend package="cob_actions" />
 </package>
 
 
