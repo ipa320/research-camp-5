@@ -18,7 +18,7 @@
   <depend package="tf"/>
   <depend package="raw_srvs"/>
   <depend package="std_srvs"/>
-  <depend package="raw_script_server"/>  
+  <depend package="action_cmdr"/>
   <depend package="raw_base_placement"/>
   <depend package="actionlib"/>  
   <depend package="raw_srvs"/> 

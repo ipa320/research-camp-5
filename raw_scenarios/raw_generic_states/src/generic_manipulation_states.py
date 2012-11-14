@@ -6,9 +6,16 @@ import smach
 import smach_ros
 import math
 
-from simple_script_server import *
-sss = simple_script_server()
 
+from os import getenv
+robot_platform = getenv("ROBOT")
+# yes, this is a hack, a better solution is known and has been discussed,
+# cf. the Lua-based Behavior Engine, but is pending implementation after RC5
+if robot_platform == "cob3-3":
+    robot_platform = "cob"
+
+import action_cmdr
+action_cmdr.load(["generic_actions", robot_platform + "_actions"])
 
 class grasp_random_object(smach.State):
 
@@ -16,33 +23,35 @@ class grasp_random_object(smach.State):
         smach.State.__init__(self, outcomes=['succeeded', 'failed'], input_keys=['object_list'])
         
     def execute(self, userdata):
-        sss.move("gripper", "open")
-        sss.move("arm", "zeroposition")
+        action_cmdr.move_gripper("open")
+        action_cmdr.move_arm("zeroposition")
         
         for object in userdata.object_list:         
-            
-            # ToDo: need to be adjusted to correct stuff           
-            #if object.pose.pose.position.z <= 0.0 or object.pose.pose.position.z >= 0.10:
-            if object.transform.transform.translation.z <= 0.0 or object.transform.transform.translation.z >= 0.10:
-                continue
-    
-            sss.move("arm", "zeroposition")                             
+                
+            sss.move_arm("zeroposition")                             
 
             ##object.pose.pose.position.z = object.pose.pose.position.z + 0.02
             #object.pose.pose.position.x = object.pose.pose.position.x + 0.01
             #object.pose.pose.position.y = object.pose.pose.position.y - 0.005
 
             #object.transform.transform.translation.z = object.transform.transform.translation.z + 0.02
-            object.transform.transform.translation.x = object.transform.transform.translation.x + 0.01
-            object.transform.transform.translation.y = object.transform.transform.translation.y - 0.005
+            #object.transform.transform.translation.x = object.transform.transform.translation.x + 0.01
+            #object.transform.transform.translation.y = object.transform.transform.translation.y - 0.005
 
-            #handle_arm = sss.move("arm", [object.pose.pose.position.x, object.pose.pose.position.y, object.pose.pose.position.z, "/base_link"])
-            handle_arm = sss.move("arm", [object.transform.transform.translation.x, object.transform.transform.translation.y, object.transform.transform.translation.z, "/base_link"])
+            #handle_arm = sss.move_arm([object.pose.pose.position.x, object.pose.pose.position.y, object.pose.pose.position.z, "/base_link"])
+            object_pose = PoseStamped()
+            object_pose.pose.position.x = object.transform.transform.x
+            object_pose.pose.position.y = object.transform.transform.y
+            object_pose.pose.position.z = object.transform.transform.z
+            object_pose.pose.orientation = object.transform.tranform.rotation
+            object_pose.header.frame_id = object.transform.header.frame_id
 
+            handle_arm = sss.move_arm(object_pose)
+            
             if handle_arm.get_state() == 3:
-                sss.move("gripper", "close")
+                sss.move_gripper("close")
                 rospy.sleep(3.0)
-                sss.move("arm", "zeroposition")        
+                sss.move_arm("zeroposition")        
                 return 'succeeded'    
             else:
                 rospy.logerr('could not find IK for current object')
@@ -58,8 +67,8 @@ class place_obj_on_rear_platform(smach.State):
 
     def execute(self, userdata):   
         
-        sss.move("arm", "zeroposition")
-        sss.move("arm", "platform_intermediate")
+        sss.move_arm("zeroposition")
+        sss.move_arm("platform_intermediate")
 
         
         if(len(userdata.rear_platform_free_poses) == 0):
@@ -68,18 +77,18 @@ class place_obj_on_rear_platform(smach.State):
             
         pltf_pose = userdata.rear_platform_free_poses.pop()
         # 
-        sss.move("arm", pltf_pose+"_pre")
+        sss.move_arm(pltf_pose+"_pre")
         #
-        sss.move("arm", pltf_pose)
+        sss.move_arm(pltf_pose)
         
         
-        sss.move("gripper", "open")
+        sss.move_gripper("open")
         rospy.sleep(2)
 
         userdata.rear_platform_occupied_poses.append(pltf_pose)
         
-        sss.move("arm", pltf_pose+"_pre")
-        sss.move("arm", "platform_intermediate")
+        sss.move_arm(pltf_pose+"_pre")
+        sss.move_arm("platform_intermediate")
 
         return 'succeeded'
     
@@ -93,11 +102,12 @@ class move_arm_out_of_view(smach.State):
         self.do_blocking = do_blocking
 
     def execute(self, userdata):   
-        sss.move("arm", "zeroposition")
-        sss.move("arm", "arm_out_of_view")
+        sss.move_arm("zeroposition")
+        sss.move_arm("arm_out_of_view")
            
-        return 'succeeded'
-    
+        return 'succeeded'        
+        
+
     
 class grasp_obj_from_pltf(smach.State):
 
@@ -114,20 +124,20 @@ class grasp_obj_from_pltf(smach.State):
 
         pltf_obj_pose = userdata.rear_platform_occupied_poses.pop()
         
-        sss.move("arm", "platform_intermediate")
+        sss.move_arm("platform_intermediate")
         # 
-        sss.move("arm", pltf_obj_pose+"_pre")
+        sss.move_arm(pltf_obj_pose+"_pre")
         #
-        sss.move("arm", pltf_obj_pose)
+        sss.move_arm(pltf_obj_pose)
         
-        sss.move("gripper", "close")
+        sss.move_gripper("close")
         rospy.sleep(3)
         
         # untested
-        sss.move("arm", pltf_obj_pose+"_pre")
+        sss.move_arm(pltf_obj_pose+"_pre")
         #
-        sss.move("arm", "platform_intermediate")
-        sss.move("arm", "zeroposition")
+        sss.move_arm("platform_intermediate")
+        sss.move_arm("zeroposition")
            
         return 'succeeded'
     
@@ -149,9 +159,26 @@ class place_object_in_configuration(smach.State):
         print "goal pose taken: ",cfg_goal_pose
         print "rest poses: ", userdata.obj_goal_configuration_poses
         
-        sss.move("arm", cfg_goal_pose)
+        sss.move_arm(cfg_goal_pose)
         
-        sss.move("gripper","open")
+        sss.move_gripper("open")
         rospy.sleep(2)
                 
         return 'succeeded'
+        
+        
+class pick_object(smach.State):
+
+    def __init__(self, do_blocking = True):
+        smach.State.__init__(self, outcomes=['succeeded', 'failed'], input_keys=['object_list'])
+        self.do_blocking = do_blocking
+
+    def execute(self, userdata):   
+	# grasps first object in list
+	# THIS SHOULD BE BROUGHT OUT AS A SEPARATE STATE
+        ah = action_cmdr.pick_up(userdata.object_list[0])
+        if ah.get_state() == 3: 
+	        return 'succeeded'
+	else:
+		return 'failed'
+	# TODO: add failure check

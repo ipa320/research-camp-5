@@ -51,6 +51,14 @@
         <element xmi:type="ros:Parameter" href="default.ros_package#//@node.0/@parameter.11"/>
         <layoutConstraint xmi:type="notation:Location" xmi:id="_FmFJwRhuEeKOQeIKn7GnXQ"/>
       </children>
+      <children xmi:type="notation:Node" xmi:id="_M8rDwCKpEeKqn5P99JQqsg" type="3001">
+        <element xmi:type="ros:Parameter" href="default.ros_package#//@node.0/@parameter.12"/>
+        <layoutConstraint xmi:type="notation:Location" xmi:id="_M8rDwSKpEeKqn5P99JQqsg"/>
+      </children>
+      <children xmi:type="notation:Node" xmi:id="_XgOv0CKuEeKZFrfHwUzPiQ" type="3001">
+        <element xmi:type="ros:Parameter" href="default.ros_package#//@node.0/@parameter.13"/>
+        <layoutConstraint xmi:type="notation:Location" xmi:id="_XgPW4CKuEeKZFrfHwUzPiQ"/>
+      </children>
       <styles xmi:type="notation:TitleStyle" xmi:id="_ZY8YoRhgEeKbB9SCYSNPzg" showTitle="true"/>
       <styles xmi:type="notation:SortingStyle" xmi:id="_ZY8YohhgEeKbB9SCYSNPzg"/>
       <styles xmi:type="notation:FilteringStyle" xmi:id="_ZY8YoxhgEeKbB9SCYSNPzg"/>
@@ -80,7 +88,7 @@
       <layoutConstraint xmi:type="notation:Bounds" xmi:id="_-kyEpBlGEeK2guPM2ujFMQ" x="257" y="184"/>
     </children>
     <element xmi:type="ros:Node" href="default.ros_package#//@node.0"/>
-    <layoutConstraint xmi:type="notation:Bounds" xmi:id="_ZY3gIRhgEeKbB9SCYSNPzg" x="252" y="72"/>
+    <layoutConstraint xmi:type="notation:Bounds" xmi:id="_ZY3gIRhgEeKbB9SCYSNPzg" x="252" y="72" width="253" height="321"/>
   </children>
   <styles xmi:type="notation:DiagramStyle" xmi:id="_VrzYgRhgEeKbB9SCYSNPzg"/>
   <element xmi:type="ros:Package" href="default.ros_package#/"/>

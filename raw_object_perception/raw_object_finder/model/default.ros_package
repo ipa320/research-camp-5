@@ -16,6 +16,8 @@
     <parameter name="downsampling_distance" value="0.005" type="double"/>
     <parameter name="min_points_per_objects" value="11"/>
     <parameter name="spherical_distance" value="2.5" type="double"/>
+    <parameter name="point_cloud_in" value="/camera/rgb/points" type="string"/>
+    <parameter name="min_planar_area_size" value="0.005" type="double"/>
   </node>
   <depend>roscpp</depend>
   <depend>tf</depend>

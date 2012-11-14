@@ -79,7 +79,7 @@ public:
 	void extractObjectCandidates(
 			pcl::PointCloud<pcl::PointXYZRGB> &point_cloud, pcl::PointCloud<
 					pcl::PointXYZRGBNormal> &planar_point_cloud, std::vector<
-					structPlanarSurface> &hierarchyPlanes);
+					structPlanarSurface> &hierarchyPlanes, float min_planar_area_size);
 	void saveClusteredObjects(std::string filename);
 	void setDistance(float fDistance);
 };

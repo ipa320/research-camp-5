@@ -23,7 +23,7 @@
 #define Min_PLANE_CLUSTER_SIZE 5
 //30 worked fine
 
-#define MIN_PLANAR_AREA_SIZE 0.001f
+//#define MIN_PLANAR_AREA_SIZE 0.001f
 //0.01f worked fine
 //0.02f worked fine
 
@@ -140,7 +140,7 @@ std::vector<structPlanarSurface> CPlaneExtraction::extractMultiplePlanes(
 		pcl::PointCloud<pcl::PointXYZRGBNormal> &point_cloud_normal,
 		pcl::PointCloud<pcl::PointXYZRGBNormal> &planar_point_cloud_normal,
 		std::vector<pcl::PointCloud<pcl::PointXYZRGBNormal> > &clustered_planes,
-		int axis) {
+		int axis, float min_planar_area_size) {
 	ROS_DEBUG("[extractMultiplePlanes] extractMultiplePlanes started ... ");
 	ros::Time start, finish;
 	start = ros::Time::now();
@@ -211,7 +211,7 @@ std::vector<structPlanarSurface> CPlaneExtraction::extractMultiplePlanes(
 
 	finish = ros::Time::now();
 	std::vector<structPlanarSurface> surfacesPH = this->createPlanarHierarchy(
-			clustered_planes, axis);
+			clustered_planes, axis, min_planar_area_size);
 	ROS_DEBUG("[extractMultiplePlanes] Execution time = %lf", (finish.toSec() - start.toSec() ));
 	return surfacesPH;
 
@@ -223,7 +223,7 @@ bool compareHeights(structPlanarSurface i, structPlanarSurface j) {
 }
 std::vector<structPlanarSurface> CPlaneExtraction::createPlanarHierarchy(
 		std::vector<pcl::PointCloud<pcl::PointXYZRGBNormal> > &clustered_planes,
-		int axis) {
+		int axis, float min_planar_area_size) {
 	ROS_DEBUG("[createPlanarHierarch] started ... ");
 	ros::Time start, finish;
 	start = ros::Time::now();
@@ -244,10 +244,11 @@ std::vector<structPlanarSurface> CPlaneExtraction::createPlanarHierarchy(
 		convexHullExtractor.reconstruct(planarSurface.convexHull);
 		//reconstruct does not fill width and height of the pointcloud
 
-		planarSurface.area = toolBox.areaConvexHull2d(planarSurface.convexHull);
-		if (planarSurface.area < MIN_PLANAR_AREA_SIZE) //minimum 0.01f area size
+		planarSurface.area = fabs(toolBox.areaConvexHull2d(planarSurface.convexHull));
+
+		if (planarSurface.area < min_planar_area_size) //minimum 0.01f area size
 		{
-			ROS_DEBUG("[createPlanarHierarchy] Surface %d skipped -> area=%f < %f",planarSurface.id,planarSurface.area,MIN_PLANAR_AREA_SIZE);
+			ROS_DEBUG("[createPlanarHierarchy] Surface %d skipped -> area=%f < %f",planarSurface.id,planarSurface.area,min_planar_area_size);
 			continue;
 		}
 		planarSurface.centroid = toolBox.centroidHull2d(

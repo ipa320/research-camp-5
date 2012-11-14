@@ -38,6 +38,8 @@ public:
 		double downsampling_distance;
 		int min_points_per_objects;
 		double spherical_distance;
+		std::string point_cloud_in;
+		double min_planar_area_size;
 
 };
 
@@ -115,11 +117,13 @@ public:
 
 		do
 		{
-			const_input_cloud = ros::topic::waitForMessage<sensor_msgs::PointCloud2>("/camera/rgb/points", ros::Duration(5));
+			ROS_INFO("point_cloud_in: %s", config.point_cloud_in.c_str());
+			const_input_cloud = ros::topic::waitForMessage<sensor_msgs::PointCloud2>(config.point_cloud_in, ros::Duration(30));
 			ROS_INFO("received point cloud data. Doing preprocessing now ...");
-			input_cloud = *const_input_cloud;
+            if(const_input_cloud)
+    			input_cloud = *const_input_cloud;
 
-		}while(!PreparePointCloud(input_cloud, point_cloud));
+		}while(!const_input_cloud || !PreparePointCloud(input_cloud, point_cloud));
 
 		try {
 			// start with an empty set of segmented objects
@@ -134,7 +138,7 @@ public:
 			std::vector<structPlanarSurface> hierarchy_planes;
 
 			ROS_INFO("extract object candidates");
-			object_candidate_extractor->extractObjectCandidates(point_cloud, planar_point_cloud, hierarchy_planes);
+			object_candidate_extractor->extractObjectCandidates(point_cloud, planar_point_cloud, hierarchy_planes, config.min_planar_area_size);
 
 			// extract the clustered planes and objects
 			std::vector<pcl::PointCloud<pcl::PointXYZRGBNormal> > clustered_objects;

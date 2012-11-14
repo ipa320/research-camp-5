@@ -373,12 +373,13 @@ bool CToolBoxROS::transformPointCloud(tf::TransformListener &tfListener,
 		try {
 		// tfListener.waitForTransform(fromFrame, toFrame, ros::Time(0),
 		tfListener.waitForTransform(fromFrame, toFrame, ros::Time::now(),
-					ros::Duration(1.0));
+					ros::Duration(20.0));
 		tfListener.transformPointCloud(std::string(toFrame),
 					pointCloudMsgConvert, pointCloudMsgTransformed);
 		success_tf = true;
 		} catch (tf::TransformException ex) {
 		//	setup_tf = true;
+            ROS_ERROR ("[transformPointCloud] Could not tf pc: %s.", ex.what());
 			success_tf = false;
 			return success_tf;
 		}
