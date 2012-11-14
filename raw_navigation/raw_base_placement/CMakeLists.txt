@@ -9,6 +9,10 @@ include($ENV{ROS_ROOT}/core/rosbuild/rosbuild.cmake)
 #  MinSizeRel     : w/o debug symbols, w/ optimization, stripped binaries
 #set(ROS_BUILD_TYPE RelWithDebInfo)
 
+## check required prerequisites
+SET(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake_modules")
+
+
 rosbuild_find_ros_package(actionlib_msgs)
 include(${actionlib_msgs_PACKAGE_PATH}/cmake/actionbuild.cmake)
 genaction()
@@ -49,15 +53,15 @@ include_directories(
 #target_link_libraries(example ${PROJECT_NAME})
 
 # PLACEMENT WRT PLATFORM
-rosbuild_add_executable(placement_wrt_platform_service_server 
-  ros/nodes/placement_wrt_platform_service_server.cpp
-  ros/src/placement_wrt_platform/LaserScanLinearRegressionUtil.cpp
-  common/src/placement_wrt_platform/LaserScanLinearRegression.cpp)
+rosbuild_add_executable(placement_wrt_workspace_service_server 
+  ros/nodes/placement_wrt_workspace_service_server.cpp
+  ros/src/placement_wrt_workspace/LaserScanLinearRegressionUtil.cpp
+  common/src/placement_wrt_workspace/LaserScanLinearRegression.cpp)
 
-rosbuild_add_executable(placement_wrt_platform_action_server
-  ros/nodes/placement_wrt_platform_action_server.cpp
-  ros/src/placement_wrt_platform/LaserScanLinearRegressionUtil.cpp
-  common/src/placement_wrt_platform/LaserScanLinearRegression.cpp)
+rosbuild_add_executable(placement_wrt_workspace_action_server
+  ros/nodes/placement_wrt_workspace_action_server.cpp
+  ros/src/placement_wrt_workspace/LaserScanLinearRegressionUtil.cpp
+  common/src/placement_wrt_workspace/LaserScanLinearRegression.cpp)
 
-rosbuild_add_executable(placement_wrt_platform_example
-  ros/src/placement_wrt_platform/test/basescan_orientation_example.cpp)
+rosbuild_add_executable(placement_wrt_workspace_example
+  ros/src/placement_wrt_workspace/test/basescan_orientation_example.cpp)

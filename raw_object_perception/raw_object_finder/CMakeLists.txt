@@ -11,40 +11,48 @@ include($ENV{ROS_ROOT}/core/rosbuild/rosbuild.cmake)
 
 rosbuild_init()
 
+#add dynamic reconfigure api
+rosbuild_find_ros_package(dynamic_reconfigure)
+include(${dynamic_reconfigure_PACKAGE_PATH}/cmake/cfgbuild.cmake)
+gencfg()
+
 #set the default path for built executables to the "bin" directory
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 #set the default path for built libraries to the "lib" directory
 set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
+
+INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/common/include)
+INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/common/src)
 
 #uncomment if you have defined messages
 #rosbuild_genmsg()
 #uncomment if you have defined services
 #rosbuild_gensrv()
 
-find_package(Eigen REQUIRED)
-include_directories(${EIGEN_INCLUDE_DIRS})
-add_definitions(${EIGEN_DEFINITIONS})
+#common commands for building c++ executables and libraries
+#rosbuild_add_library(${PROJECT_NAME} src/example.cpp)
+#target_link_libraries(${PROJECT_NAME} another_library)
+#rosbuild_add_boost_directories()
+#rosbuild_link_boost(${PROJECT_NAME} thread)
+#rosbuild_add_executable(example examples/example.cpp)
+#target_link_libraries(example ${PROJECT_NAME})
 
+# for every node that is executable we have to generate a line like:
+rosbuild_add_executable(object_segmentation ros/src/object_segmentation_ros.cpp) 
 
-include_directories(
-${PROJECT_SOURCE_DIR}/ros/include
+# protected region user Cmake macros on begin #
+rosbuild_add_library(raw_object_segmentation
+	common/src/object_candidate_extraction.cpp
+	common/src/plane_extraction.cpp
+	common/src/roi_extraction.cpp
+	common/src/toolbox_ros.cpp
 )
 
-rosbuild_add_library(raw_toolbox_ros ros/src/toolbox_ros.cpp)
-rosbuild_add_library(raw_plane_extraction ros/src/plane_extraction.cpp)
-rosbuild_add_library(raw_object_candidate_extraction ros/src/object_candidate_extraction.cpp)
-
-rosbuild_add_executable(object_segmentation_node
-	ros/src/nodes/object_segmentation_node.cpp
-	ros/src/object_segmentation.cpp
-	ros/src/roi_extraction.cpp
-)
-target_link_libraries(object_segmentation_node
-	raw_toolbox_ros
-	raw_plane_extraction
-	raw_object_candidate_extraction
+target_link_libraries(object_segmentation 
+	raw_object_segmentation
+	brics3d_world_model
+	brics3d_util
+	brics3d_core
 )
 
-target_link_libraries(raw_object_candidate_extraction
-	raw_plane_extraction
-)
+# protected region user Cmake macros end #

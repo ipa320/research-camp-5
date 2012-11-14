@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<launch>
+
+	<!-- upload parameters -->
+	<include file="$(find raw_config)/launch/push_config.launch" />
+	<include file="$(find raw_default_env_config)/upload_param.launch" />
+	<include file="$(find raw_default_robot_config)/upload_param.launch" />
+
+    <!-- navigation -->
+    <include file="$(find cob_navigation_global)/launch/2dnav_ros_dwa.launch">
+    	<arg name="map" value="$(find raw_default_env_config)/rc5/map.yaml"/>
+    </include>
+
+	<group>
+		<machine name="pc2" address="cob3-3-pc2" default="true"/>
+        <include file="$(find raw_object_finder)/ros/launch/object_segmentation.launch" />
+	</group>
+
+	<group>
+		<machine name="pc3" address="cob3-3-pc3" default="true"/>
+	    <include file="$(find cob_arm_navigation_python)/launch/start_prerequisites.launch" />
+	</group>
+
+	<machine name="pc1" address="cob3-3-pc1" default="true"/>
+
+
+</launch>

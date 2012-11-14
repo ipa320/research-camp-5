@@ -1,0 +1,15 @@
+StateName: GET_OBJ_POSES_FOR_CONFIGURATION
+Purpose/Description:
+	* gets object poses from parameter server, depending on configuration
+	* sort poses
+	* store poses in output
+Input:
+	* config: "line" used in configuration (here realized as static config)
+	* obj_goal_configuration_poses (why input?)
+Output:
+	* obj_goal_configuration_poses (data)
+	* success vs failure (event)
+Preconditions: parameter server up and running and contains requested configuration
+Effects: only output
+Invariants/Guarantees: obj_goal_configuration_poses contains usable information if success
+Possible Decomposition or Generalization: config parameter could be realized in non-static way

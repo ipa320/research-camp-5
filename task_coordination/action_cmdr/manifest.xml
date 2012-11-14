@@ -1,0 +1,19 @@
+<package>
+  <description brief="action_cmdr">
+     Action commander. Extensible utility library for action execution.
+
+  </description>
+  <author>Florian Weisshardt</author>
+  <license>LGPL</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/script_server_core</url>
+
+  <depend package="rospy" />
+  <depend package="roslib" />
+  <depend package="actionlib" />
+  <depend package="raw_srvs"/>
+  <depend package="tf" />
+  <depend package="brics_3d_msgs" /> 
+  <depend package="geometry_msgs" />
+  
+</package>

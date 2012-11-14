@@ -1,0 +1,25 @@
+<package>
+  <description brief="youbot_actions">
+     Action specific to the youbot.
+  </description>
+  <author>Tim Niemueller</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/youbot_actions</url>
+  <depend package="rospy"/>
+  <depend package="actionlib"/>
+  <depend package="actionlib_msgs"/>
+  <depend package="smach"/>
+  <depend package="action_cmdr"/>
+  <depend package="tf"/>
+  <depend package="raw_arm_navigation" />
+  <depend package="raw_base_placement" />
+  <depend package="brics_actuator" />
+  <depend package="geometry_msgs" />
+  <depend package="move_base_msgs" />
+  <export>
+    <actions action-modules="youbot_actions" platform="youbot" />
+  </export>
+</package>
+
+
