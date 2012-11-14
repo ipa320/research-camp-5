@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<launch>
+	<!-- tf between head motor axis and actual kinect pose -->
+	<!-- <node pkg="tf" type="static_transform_publisher" name="openni_base_link" args="-0.05 0 -0.03 0 0 -3.14 /head_tof_frame /openni_camera 100" /> -->
+	-	<node pkg="tf" type="static_transform_publisher" name="openni_base_link" args="0.0 0.0 1.00 0 0.5 0 /base_link /openni_camera 100" />
+	
+	<!-- openni kinect node -->
+    <include file="$(find openni_camera)/launch/openni_node.launch"/>
+</launch>

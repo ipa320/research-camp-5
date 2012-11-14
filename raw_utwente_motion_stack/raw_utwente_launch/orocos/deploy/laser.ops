@@ -1,0 +1,42 @@
+import("TSimAdapters");
+
+#loadComponent("amcl_pose_to_odometry", "geometry_PoseWithCovarianceStamped_to_TSim");
+loadComponent("odom_to_map", "TF_to_TSim");
+loadComponent("odometry_to_amcl", "TSim_to_TF");
+
+# 
+# Set NON RT priorities
+# 
+#setActivity("amcl_pose_to_odometry", 0.1, LowestPriority, ORO_SCHED_OTHER);
+setActivity("odom_to_map", 0.1, LowestPriority, ORO_SCHED_OTHER);
+setActivity("odometry_to_amcl", 0.1, LowestPriority, ORO_SCHED_OTHER);
+
+#
+# Connections
+#
+var ConnPolicy cp_rt_lf;
+cp_rt_lf.type = DATA;
+cp_rt_lf.lock_policy = LOCK_FREE;
+
+#var ConnPolicy cp_ros_amcl_pose;
+#cp_ros_amcl_pose.transport = 3;
+#cp_ros_amcl_pose.name_id = "/amcl_pose";
+#stream("amcl_pose_to_odometry.input_transform", cp_ros_amcl_pose);
+#connect("amcl_pose_to_odometry.output_transform", "Odometry.H_odom_map", cp_rt_lf);
+
+odom_to_map.setSourceFrame("odom");
+odom_to_map.setTargetFrame("map");
+connect("odom_to_map.output_transform", "Odometry.H_odom_map", cp_rt_lf);
+
+odometry_to_amcl.setSourceFrame("odom");
+odometry_to_amcl.setTargetFrame("base_link");
+connect("Odometry.H_base_odom", "odometry_to_amcl.input_transform", cp_rt_lf);
+
+#
+# Start
+#
+
+#amcl_pose_to_odometry.start;
+odometry_to_amcl.start;
+odom_to_map.start;
+

@@ -1,0 +1,82 @@
+#
+# Driver
+#
+//var ConnPolicy ros_arm_js;
+//ros_arm_js.transport = 3;
+//ros_arm_js.name_id = "/youBot/arm_joint_state";
+
+//stream("driver.Arm1.joint_state", ros_arm_js);
+
+var ConnPolicy ros_base_js;
+ros_base_js.transport = 3;
+ros_base_js.name_id = "/youBot/base_joint_state";
+
+stream("driver.Base.joint_state", ros_base_js);
+
+#
+# Executive
+#
+# tba
+
+#
+# Controller components
+#
+//var ConnPolicy ros_cc_1;
+//ros_cc_1.transport = 3;
+//ros_cc_1.name_id = "/youBot/CartesianController/W_tooltip_00";
+//stream("CartesianController.W_tooltip_00", ros_cc_1);
+
+
+//var ConnPolicy ros_kin_1;
+//ros_kin_1.transport = 3;
+//ros_kin_1.name_id = "/youBot/YouBotKinematics/torques_command";
+//stream("YouBotKinematics.torques_command", ros_kin_1);
+
+//var ConnPolicy ros_kin_2;
+//ros_kin_2.transport = 3;
+//ros_kin_2.name_id = "/youBot/YouBotKinematics/W_base_00";
+//stream("YouBotKinematics.W_base_00", ros_kin_2);
+
+//var ConnPolicy ros_kin_3;
+//ros_kin_3.transport = 3;
+//ros_kin_3.name_id = "/youBot/YouBotKinematics/T_tooltip_00";
+//stream("YouBotKinematics.T_tooltip_00", ros_kin_3);
+
+var ConnPolicy ros_kin_4;
+ros_kin_4.transport = 3;
+ros_kin_4.name_id = "/youBot/YouBotKinematics/H_tooltip_0";
+stream("YouBotKinematics.H_tooltip_0", ros_kin_4);
+
+
+//var ConnPolicy ros_ap_1;
+//ros_ap_1.transport = 3;
+//ros_ap_1.name_id = "/youBot/ArmPoseController/Arm_torque";
+//stream("ArmPoseController.Arm_torque", ros_ap_1);
+
+//var ConnPolicy ros_ap_2;
+//ros_ap_2.transport = 3;
+//ros_ap_2.name_id = "/youBot/ArmPoseController/joints_angle_output";
+//stream("ArmPoseController.joints_angle_output", ros_ap_2);
+
+
+var ConnPolicy ros_bp_1;
+ros_bp_1.transport = 3;
+ros_bp_1.name_id = "/youBot/BasePoseController/Base_torque";
+stream("BasePoseController.Base_torque", ros_bp_1);
+
+//var ConnPolicy ros_bp_2;
+//ros_bp_2.transport = 3;
+//ros_bp_2.name_id = "/youBot/BasePoseController/T_base_00";
+//stream("BasePoseController.T_base_00", ros_bp_2);
+
+//var ConnPolicy ros_bp_3;
+//ros_bp_3.transport = 3;
+//ros_bp_3.name_id = "/youBot/BasePoseController/H_base_0_output";
+//stream("BasePoseController.H_base_0_output", ros_bp_3);
+
+
+var ConnPolicy ros_odo_1;
+ros_odo_1.transport = 3;
+ros_odo_1.name_id = "/youBot/Odometry/H_base_0";
+stream("Odometry.H_base_0", ros_odo_1);
+

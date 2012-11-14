@@ -16,7 +16,7 @@ holonomic_robot: true
 
 # Goal Tolerance Parameters
 xy_goal_tolerance: 0.1
-yaw_goal_tolerance: 2.0
+yaw_goal_tolerance: 1.0
 
 # Forward Simulation Parameters
 sim_time: 1.7

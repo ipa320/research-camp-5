@@ -3,6 +3,5 @@
 
 	<!-- send ROBOT_ENV parameters to parameter server -->
 	<rosparam command="load" ns="/script_server/base" file="$(find raw_default_env_config)/$(env ROBOT_ENV)/navigation_goals.yaml"/>
-	<rosparam command="load" ns="/simulation/objects" file="$(find raw_default_env_config)/$(env ROBOT_ENV)/simulation_object_locations.yaml"/>
 
 </launch>

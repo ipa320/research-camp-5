@@ -1,0 +1,79 @@
+#
+# BRSU preparations
+#
+
+import("rtt_rosnode");
+import("fbsched");
+import("EventLogger");
+require("ros_integration")
+require("print")
+
+print.ln("Starting the FBScheduler");
+loadComponent("controlloop_scheduler", "FBSched");
+setActivity("controlloop_scheduler", 0.001, HighestPriority, ORO_SCHED_RT);
+
+print.ln("Starting generic/driver.ops")
+runScript( rospack.find("YouBot_deployment") + "/rtt_deploy/generic/driver.ops")
+
+print.ln("Starting BRSU/controller.ops")
+runScript( rospack.find("YouBot_deployment") + "/rtt_deploy/BRSU/controller.ops")
+
+#print.ln("Starting generic/diagnostics.ops")
+#runScript( rospack.find("YouBot_deployment") + "/rtt_deploy/BRSU/diagnostics.ops")
+
+print.ln("Starting BRSU/executive.ops")
+runScript( rospack.find("YouBot_deployment") + "/rtt_deploy/BRSU/executive.ops")
+
+print.ln("Starting raw_arm_bridge_ros_orocos/orocos/deploy/arm_bridge.ops")
+runScript( rospack.find("raw_arm_bridge_ros_orocos") + "/orocos/deploy/arm_bridge.ops")
+
+print.ln("Starting republishing to rviz")
+#runScript( rospack.find("YouBot_deployment") + "/rtt_deploy/generic/configuration_publisher.ops")
+runScript( rospack.find("YouBot_deployment") + "/rtt_deploy/generic/youbot_state_republisher.ops")
+
+#print.ln("Starting joystick_to_geometry_Twist/slave.ops")
+#runScript( rospack.find("joystick_to_geometry_Twist") + "/slave.ops")
+
+#print.ln("Starting YouBot_deployment/rtt_deploy/BRSU/laser.ops");
+#runScript( rospack.find("YouBot_deployment") + "/rtt_deploy/BRSU/laser.ops")
+
+print.ln("Starting control loop");
+controlloop_scheduler.configure;
+controlloop_scheduler.start;
+
+print.ln("Clearing controller timeouts.")
+driver.Arm1.clearControllerTimeouts;
+driver.Base.clearControllerTimeouts;
+
+#
+# Snake position
+# 
+#executive.JointSpaceSetpoint=array( 0.0, -0.3, 0.5, 0.5, 0.0)
+#executive.setJointStiffness(executive.JointSpaceStiffness);
+#executive.setJointAngles(executive.JointSpaceSetpoint);
+#executive.jointspaceControlMode;
+
+#executive.sleep(3);
+
+print.ln("Coupling haptic slave connections");
+runScript( rospack.find("YouBot_deployment") + "/rtt_deploy/BRSU/haptic_slave_connections.ops")
+
+#executive.sleep(1);
+
+#print.ln("Started...");
+
+#var float64[] cart_stiffness = float64[](1000.0, 1000.0, 1000.0, 0.0, 60.0, 0.0, 0.0, 0.0);
+#var float64[] joint_stiffness = float64[](350,350,350,5,0,0,0,10)
+
+#executive.setCartesianStiffness(cart_stiffness);
+#var float64[] cart_pos = float64[](16, 0.0);
+#executive.getHtip0(cart_pos);
+#executive.setHvp0(cart_pos);
+#executive.setJointStiffness(joint_stiffness)
+#executive.fullControlMode;
+#executive.sleep(1);
+
+executive.jointspaceControl
+executive.useArmOnly
+executive.unfoldArmPosition
+executive.execute

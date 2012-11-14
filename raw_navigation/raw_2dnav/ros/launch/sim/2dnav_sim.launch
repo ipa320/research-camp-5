@@ -2,7 +2,7 @@
 <launch>
     <!-- navigation goals -->
 	<include file="$(find raw_default_env_config)/upload_param.launch" />
-    
+
 	<arg name="map" default="$(find raw_default_env_config)/$(env ROBOT_ENV)/map.yaml" />
 
 	<!--- Run map_server -->

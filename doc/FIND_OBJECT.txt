@@ -1,0 +1,25 @@
+StateName: 
+FIND_OBJECT
+
+Purpose/Description:
+Find (all) objects in the 3D scene
+
+Input:
+	* none
+
+Output:
+	* found objects (object_list)
+	* success or failure
+
+Preconditions:
+	* perception is ready
+
+Effects:
+	* none
+
+Invariants/Guarantees:
+	* nothing special
+
+Possible Decomposition or Generalization:
+	* configure what to search for, how long to wait etc.
+

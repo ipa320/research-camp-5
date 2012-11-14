@@ -1,0 +1,17 @@
+<package>
+  <description brief="raw_utwente_launch">
+
+     raw_utwente_launch
+
+  </description>
+  <author>fred</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/raw_utwente_launch</url>
+  <depend package="roscpp"/>
+  <depend package="sensor_msgs"/>
+  <depend package="std_srvs"/>
+
+</package>
+
+

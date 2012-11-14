@@ -1,0 +1,24 @@
+<package>
+  <description brief="raw_arm_bridge_ros_orocos">
+
+     raw_arm_bridge_ros_orocos
+
+  </description>
+  <author>fred</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/raw_arm_bridge_ros_orocos</url>
+  <depend package="roscpp"/>
+  <depend package="rtt"/>
+  <depend package="rtt_rosnode"/>
+  <depend package="rtt_std_msgs"/>
+  <depend package="rtt_sensor_msgs"/>
+  <depend package="rtt_geometry_msgs"/>
+  <depend package="rtt_brics_actuator"/>
+  <depend package="actionlib"/>
+  <depend package="raw_arm_navigation"/>
+
+
+</package>
+
+

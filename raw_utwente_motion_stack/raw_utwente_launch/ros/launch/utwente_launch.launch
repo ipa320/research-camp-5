@@ -1,0 +1,4 @@
+<?xml version="1.0"?>
+<launch>
+    <node pkg="raw_utwente_launch" type="run.sh" args="$(find raw_utwente_launch)/orocos/deploy/BRSU.ops" name="raw_utwente_launch" output="screen" />
+</launch>
